@@ -1,0 +1,36 @@
+{
+  "name": "Atom OS",
+  "short_name": "Atom OS",
+  "description": "Gym Management & Fitness Tracking",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#0D0D0D",
+  "theme_color": "#F5C842",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "icons": [
+    { "src": "/atom-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/atom-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/atom-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/atom-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["fitness", "health", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Check In",
+      "short_name": "Check In",
+      "description": "QR check-in at gym",
+      "url": "/member/checkin",
+      "icons": [{ "src": "/atom-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Log Workout",
+      "short_name": "Workout",
+      "description": "Log a new workout session",
+      "url": "/member/workouts",
+      "icons": [{ "src": "/atom-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- Background -->
+  <rect width="192" height="192" rx="40" fill="#0D0D0D"/>
+  <!-- Gold rounded square -->
+  <rect x="32" y="32" width="128" height="128" rx="24" fill="#F5C842"/>
+  <!-- Letter A -->
+  <text
+    x="96" y="140"
+    font-family="'Barlow Condensed', Arial Black, sans-serif"
+    font-weight="800"
+    font-size="110"
+    text-anchor="middle"
+    fill="#0D0D0D"
+    letter-spacing="-4"
+  >A</text>
+</svg>

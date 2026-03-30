@@ -1,0 +1,103 @@
+/* apps/web/src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  /* Prevent tap highlight on mobile */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background-color: #0D0D0D;
+    color: #F0F0F0;
+    font-family: 'DM Sans', sans-serif;
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
+  }
+
+  /* iOS safe area for bottom nav */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #161616; }
+  ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #F5C842; }
+}
+
+@layer components {
+  /* Gold divider line */
+  .gold-line {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-atom-gold to-transparent opacity-30;
+  }
+
+  /* Card surface */
+  .card {
+    @apply bg-atom-surface border border-atom-border rounded-xl p-5;
+  }
+
+  /* Primary button — gold */
+  .btn-primary {
+    @apply bg-atom-gold text-atom-bg font-display font-700 tracking-wide
+           px-6 py-3 rounded-lg text-sm uppercase
+           hover:bg-atom-gold-dim active:scale-95
+           transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply border border-atom-border text-atom-text font-body font-500
+           px-6 py-3 rounded-lg text-sm
+           hover:border-atom-gold hover:text-atom-gold
+           transition-all duration-150 disabled:opacity-40;
+  }
+
+  /* Danger button */
+  .btn-danger {
+    @apply bg-atom-danger text-white font-display font-700 tracking-wide
+           px-6 py-3 rounded-lg text-sm uppercase
+           hover:bg-red-600 active:scale-95
+           transition-all duration-150 disabled:opacity-40;
+  }
+
+  /* Input field */
+  .input {
+    @apply w-full bg-atom-bg border border-atom-border rounded-lg px-4 py-3
+           text-atom-text placeholder-atom-muted text-sm font-body
+           focus:outline-none focus:border-atom-gold focus:ring-1 focus:ring-atom-gold/30
+           transition-all duration-150 disabled:opacity-50;
+  }
+
+  /* Label */
+  .label {
+    @apply block text-atom-muted text-xs font-display uppercase tracking-widest mb-1.5;
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply card flex flex-col gap-1;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono font-500;
+  }
+  .badge-green  { @apply badge bg-atom-success/20 text-atom-success; }
+  .badge-yellow { @apply badge bg-atom-warning/20 text-atom-warning; }
+  .badge-red    { @apply badge bg-atom-danger/20 text-atom-danger; }
+  .badge-blue   { @apply badge bg-atom-info/20 text-atom-info; }
+  .badge-gray   { @apply badge bg-atom-border text-atom-muted; }
+
+  /* Page container */
+  .page {
+    @apply max-w-6xl mx-auto px-4 py-6 animate-fade-in;
+  }
+
+  /* Section title */
+  .section-title {
+    @apply font-display text-2xl font-700 uppercase tracking-wide text-atom-text;
+  }
+}

@@ -1,0 +1,20 @@
+# railway.toml — Atom OS API deployment config
+[build]
+builder = "nixpacks"
+buildCommand = "npm install && npm run build --workspace=apps/api"
+
+[deploy]
+startCommand = "node apps/api/dist/index.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[environments.production.variables]
+NODE_ENV = "production"
+PORT = "4000"
+# Set these in Railway dashboard (not here):
+# SUPABASE_URL
+# SUPABASE_ANON_KEY
+# SUPABASE_SERVICE_ROLE_KEY
+# FRONTEND_URL
