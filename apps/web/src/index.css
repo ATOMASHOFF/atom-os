@@ -4,10 +4,14 @@
 @tailwind utilities;
 
 @layer base {
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
 
   /* Prevent tap highlight on mobile */
-  * { -webkit-tap-highlight-color: transparent; }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 
   body {
     background-color: #0D0D0D;
@@ -22,13 +26,26 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: #161616; }
-  ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: #F5C842; }
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #161616;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2A2A2A;
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #F5C842;
+  }
 }
 
 @layer components {
+
   /* Gold divider line */
   .gold-line {
     @apply h-px w-full bg-gradient-to-r from-transparent via-atom-gold to-transparent opacity-30;
@@ -41,34 +58,22 @@
 
   /* Primary button — gold */
   .btn-primary {
-    @apply bg-atom-gold text-atom-bg font-display font-700 tracking-wide
-           px-6 py-3 rounded-lg text-sm uppercase
-           hover:bg-atom-gold-dim active:scale-95
-           transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply bg-atom-gold text-atom-bg font-display font-bold tracking-wide px-6 py-3 rounded-lg text-sm uppercase hover:bg-atom-gold-dim active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed;
   }
 
   /* Ghost button */
   .btn-ghost {
-    @apply border border-atom-border text-atom-text font-body font-500
-           px-6 py-3 rounded-lg text-sm
-           hover:border-atom-gold hover:text-atom-gold
-           transition-all duration-150 disabled:opacity-40;
+    @apply border border-atom-border text-atom-text font-body font-medium px-6 py-3 rounded-lg text-sm hover:border-atom-gold hover:text-atom-gold transition-all duration-150 disabled:opacity-40;
   }
 
   /* Danger button */
   .btn-danger {
-    @apply bg-atom-danger text-white font-display font-700 tracking-wide
-           px-6 py-3 rounded-lg text-sm uppercase
-           hover:bg-red-600 active:scale-95
-           transition-all duration-150 disabled:opacity-40;
+    @apply bg-atom-danger text-white font-display font-bold tracking-wide px-6 py-3 rounded-lg text-sm uppercase hover:bg-red-600 active:scale-95 transition-all duration-150 disabled:opacity-40;
   }
 
   /* Input field */
   .input {
-    @apply w-full bg-atom-bg border border-atom-border rounded-lg px-4 py-3
-           text-atom-text placeholder-atom-muted text-sm font-body
-           focus:outline-none focus:border-atom-gold focus:ring-1 focus:ring-atom-gold/30
-           transition-all duration-150 disabled:opacity-50;
+    @apply w-full bg-atom-bg border border-atom-border rounded-lg px-4 py-3 text-atom-text placeholder-atom-muted text-sm font-body focus:outline-none focus:border-atom-gold focus:ring-1 focus:ring-atom-gold/30 transition-all duration-150 disabled:opacity-50;
   }
 
   /* Label */
@@ -83,13 +88,28 @@
 
   /* Badge */
   .badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono font-500;
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono font-medium;
   }
-  .badge-green  { @apply badge bg-atom-success/20 text-atom-success; }
-  .badge-yellow { @apply badge bg-atom-warning/20 text-atom-warning; }
-  .badge-red    { @apply badge bg-atom-danger/20 text-atom-danger; }
-  .badge-blue   { @apply badge bg-atom-info/20 text-atom-info; }
-  .badge-gray   { @apply badge bg-atom-border text-atom-muted; }
+
+  .badge-green {
+    @apply badge bg-atom-success/20 text-atom-success;
+  }
+
+  .badge-yellow {
+    @apply badge bg-atom-warning/20 text-atom-warning;
+  }
+
+  .badge-red {
+    @apply badge bg-atom-danger/20 text-atom-danger;
+  }
+
+  .badge-blue {
+    @apply badge bg-atom-info/20 text-atom-info;
+  }
+
+  .badge-gray {
+    @apply badge bg-atom-border text-atom-muted;
+  }
 
   /* Page container */
   .page {
@@ -98,6 +118,6 @@
 
   /* Section title */
   .section-title {
-    @apply font-display text-2xl font-700 uppercase tracking-wide text-atom-text;
+    @apply font-display text-2xl font-bold uppercase tracking-wide text-atom-text;
   }
 }
