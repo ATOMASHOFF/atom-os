@@ -2,6 +2,15 @@
 // Main Express server entry point for Atom OS API
 console.log('[STARTUP] Initializing process...');
 
+process.on('uncaughtException', (err) => {
+  console.error('[CRITICAL] Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[CRITICAL] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';

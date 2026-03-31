@@ -4,7 +4,7 @@ builder = "nixpacks"
 buildCommand = "npm install && npm run build --workspace=packages/shared && npm run build --workspace=apps/api"
 
 [deploy]
-startCommand = "node apps/api/dist/index.js"
+startCommand = "npm run start --workspace=apps/api"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
