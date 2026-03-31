@@ -1,5 +1,6 @@
 // apps/api/src/index.ts
 // Main Express server entry point for Atom OS API
+console.log('[STARTUP] Initializing process...');
 
 import 'dotenv/config';
 import express from 'express';
@@ -23,7 +24,8 @@ const PORT = parseInt(process.env.PORT ?? '4000', 10);
 // Registered before all middleware so Railway deploy probes always get 200.
 // Rate limiter / CORS / body parser must NOT block this route.
 
-app.get('/health', (_req, res) => {
+app.get('/health', (req, res) => {
+  console.log(`[HEALTH] Check received from ${req.ip}`);
   const missingVars = [
     !process.env.SUPABASE_URL              && 'SUPABASE_URL',
     !process.env.SUPABASE_ANON_KEY         && 'SUPABASE_ANON_KEY',
@@ -119,11 +121,13 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 // ─── START ────────────────────────────────────────────────────────────────────
 
-app.listen(PORT, () => {
+console.log('[STARTUP] Attemping to listen on port', PORT);
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`
 ╔═══════════════════════════════════╗
 ║     ATOM OS API — v0.1.0          ║
 ║     Port: ${PORT}                    ║
+║     Host: 0.0.0.0                 ║
 ║     Env:  ${process.env.NODE_ENV ?? 'development'}              ║
 ╚═══════════════════════════════════╝
   `);
