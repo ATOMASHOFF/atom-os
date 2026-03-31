@@ -2,10 +2,10 @@
 // All routes: super_admin only
 
 import { Router } from 'express';
-import { supabaseAdmin } from '../utils/supabase.js';
-import { ok, created, badRequest, notFound, serverError, conflict } from '../utils/response.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { requireRole, validate } from '../middleware/roles.js';
+import { supabaseAdmin } from '../utils/supabase';
+import { ok, created, badRequest, notFound, serverError, conflict } from '../utils/response';
+import { authMiddleware } from '../middleware/auth';
+import { requireRole, validate } from '../middleware/roles';
 import {
   CreateGymSchema,
   UpdateGymSchema,

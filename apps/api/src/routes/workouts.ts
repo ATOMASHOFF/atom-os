@@ -3,12 +3,12 @@
 // RLS enforces user isolation. All queries also filter by user_id for safety.
 
 import { Router } from 'express';
-import { supabaseAdmin } from '../utils/supabase.js';
+import { supabaseAdmin } from '../utils/supabase';
 import {
   ok, created, badRequest, notFound, serverError, forbidden,
-} from '../utils/response.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { validate } from '../middleware/roles.js';
+} from '../utils/response';
+import { authMiddleware } from '../middleware/auth';
+import { validate } from '../middleware/roles';
 import {
   CreateWorkoutLogSchema,
   UpdateWorkoutLogSchema,

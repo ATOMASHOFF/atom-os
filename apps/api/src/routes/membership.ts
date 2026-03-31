@@ -2,12 +2,12 @@
 // Handles: member join requests, gym_admin approvals, member listing
 
 import { Router } from 'express';
-import { supabaseAdmin } from '../utils/supabase.js';
+import { supabaseAdmin } from '../utils/supabase';
 import {
   ok, created, badRequest, notFound, serverError, conflict, forbidden,
-} from '../utils/response.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { requireRole, requireGymContext, validate } from '../middleware/roles.js';
+} from '../utils/response';
+import { authMiddleware } from '../middleware/auth';
+import { requireRole, requireGymContext, validate } from '../middleware/roles';
 import { JoinGymSchema, UpdateMembershipSchema } from '@atom-os/shared';
 
 const router = Router();

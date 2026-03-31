@@ -3,12 +3,12 @@
 // All writes use supabaseAdmin (service role). Members NEVER write directly.
 
 import { Router } from 'express';
-import { supabaseAdmin } from '../utils/supabase.js';
+import { supabaseAdmin } from '../utils/supabase';
 import {
   ok, created, badRequest, serverError, conflict, forbidden, notFound,
-} from '../utils/response.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { requireRole, requireGymContext, validate, validateQuery } from '../middleware/roles.js';
+} from '../utils/response';
+import { authMiddleware } from '../middleware/auth';
+import { requireRole, requireGymContext, validate, validateQuery } from '../middleware/roles';
 import { ScanQRSchema, CheckinQuerySchema } from '@atom-os/shared';
 
 const router = Router();

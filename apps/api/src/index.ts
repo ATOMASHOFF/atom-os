@@ -8,13 +8,13 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
 // Routes
-import authRouter from './routes/auth.js';
-import gymsRouter from './routes/gyms.js';
-import membershipRouter from './routes/membership.js';
-import qrRouter from './routes/qr.js';
-import checkinsRouter from './routes/checkins.js';
-import workoutsRouter from './routes/workouts.js';
-import adminRouter from './routes/admin.js';
+import authRouter from './routes/auth';
+import gymsRouter from './routes/gyms';
+import membershipRouter from './routes/membership';
+import qrRouter from './routes/qr';
+import checkinsRouter from './routes/checkins';
+import workoutsRouter from './routes/workouts';
+import adminRouter from './routes/admin';
 
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '4000', 10);

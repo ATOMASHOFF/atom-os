@@ -3,7 +3,7 @@
 // Usage: router.get('/route', authMiddleware, requireRole('gym_admin'), handler)
 
 import { Request, Response, NextFunction } from 'express';
-import { forbidden } from '../utils/response.js';
+import { forbidden } from '../utils/response';
 import type { UserRole } from '@atom-os/shared';
 
 /**
@@ -39,7 +39,7 @@ export function requireGymContext(req: Request, res: Response, next: NextFunctio
  * Validate Zod schema on req.body. Returns 400 with field errors on failure.
  */
 import { ZodSchema } from 'zod';
-import { validationError } from '../utils/response.js';
+import { validationError } from '../utils/response';
 
 export function validate(schema: ZodSchema) {
   return (req: Request, res: Response, next: NextFunction): void => {

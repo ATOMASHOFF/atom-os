@@ -8,10 +8,10 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
-import { supabaseAdmin } from '../utils/supabase.js';
-import { ok, serverError, forbidden, notFound } from '../utils/response.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { requireRole, requireGymContext } from '../middleware/roles.js';
+import { supabaseAdmin } from '../utils/supabase';
+import { ok, serverError, forbidden, notFound } from '../utils/response';
+import { authMiddleware } from '../middleware/auth';
+import { requireRole, requireGymContext } from '../middleware/roles';
 
 const router = Router();
 router.use(authMiddleware, requireRole('gym_admin'), requireGymContext);

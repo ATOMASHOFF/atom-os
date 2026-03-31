@@ -3,8 +3,8 @@
 // Attaches req.user = { id, email, role, gym_id } for downstream use.
 
 import { Request, Response, NextFunction } from 'express';
-import { supabaseAdmin } from '../utils/supabase.js';
-import { unauthorized, serverError } from '../utils/response.js';
+import { supabaseAdmin } from '../utils/supabase';
+import { unauthorized, serverError } from '../utils/response';
 import type { UserRole } from '@atom-os/shared';
 
 export interface AuthUser {

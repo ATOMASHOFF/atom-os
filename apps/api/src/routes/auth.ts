@@ -1,10 +1,10 @@
 // apps/api/src/routes/auth.ts
 
 import { Router } from 'express';
-import { supabase, supabaseAdmin } from '../utils/supabase.js';
-import { ok, created, badRequest, serverError, unauthorized } from '../utils/response.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { validate } from '../middleware/roles.js';
+import { supabase, supabaseAdmin } from '../utils/supabase';
+import { ok, created, badRequest, serverError, unauthorized } from '../utils/response';
+import { authMiddleware } from '../middleware/auth';
+import { validate } from '../middleware/roles';
 import { SignupSchema, LoginSchema, UpdateProfileSchema } from '@atom-os/shared';
 
 const router = Router();

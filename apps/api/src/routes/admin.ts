@@ -2,10 +2,10 @@
 // Super Admin only — global platform stats + oversight
 
 import { Router } from 'express';
-import { supabaseAdmin } from '../utils/supabase.js';
-import { ok, serverError } from '../utils/response.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { requireRole } from '../middleware/roles.js';
+import { supabaseAdmin } from '../utils/supabase';
+import { ok, serverError } from '../utils/response';
+import { authMiddleware } from '../middleware/auth';
+import { requireRole } from '../middleware/roles';
 
 const router = Router();
 router.use(authMiddleware, requireRole('super_admin'));

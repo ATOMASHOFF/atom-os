@@ -1,7 +1,7 @@
 # railway.toml — Atom OS API deployment config
 [build]
 builder = "nixpacks"
-buildCommand = "npm install && npm run build --workspace=apps/api"
+buildCommand = "npm install && npm run build --workspace=packages/shared && npm run build --workspace=apps/api"
 
 [deploy]
 startCommand = "node apps/api/dist/index.js"
