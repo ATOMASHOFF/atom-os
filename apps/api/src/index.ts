@@ -17,7 +17,27 @@ import workoutsRouter from './routes/workouts.js';
 import adminRouter from './routes/admin.js';
 
 const app = express();
-const PORT = process.env.PORT ?? 4000;
+const PORT = parseInt(process.env.PORT ?? '4000', 10);
+
+// ─── HEALTH CHECK — MUST BE FIRST ─────────────────────────────────────────────
+// Registered before all middleware so Railway deploy probes always get 200.
+// Rate limiter / CORS / body parser must NOT block this route.
+
+app.get('/health', (_req, res) => {
+  const missingVars = [
+    !process.env.SUPABASE_URL              && 'SUPABASE_URL',
+    !process.env.SUPABASE_ANON_KEY         && 'SUPABASE_ANON_KEY',
+    !process.env.SUPABASE_SERVICE_ROLE_KEY && 'SUPABASE_SERVICE_ROLE_KEY',
+  ].filter(Boolean);
+
+  res.status(200).json({
+    status: missingVars.length === 0 ? 'ok' : 'degraded',
+    version: '1.5.0',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV ?? 'development',
+    ...(missingVars.length > 0 && { missing_env: missingVars }),
+  });
+});
 
 // ─── SECURITY MIDDLEWARE ──────────────────────────────────────────────────────
 
@@ -66,17 +86,6 @@ app.use(globalLimiter);
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
-
-// ─── HEALTH CHECK ─────────────────────────────────────────────────────────────
-
-app.get('/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    version: '0.1.0',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV ?? 'development',
-  });
-});
 
 // ─── API ROUTES ───────────────────────────────────────────────────────────────
 
