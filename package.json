@@ -12,6 +12,8 @@
     "dev:web": "npm run dev --workspace=apps/web",
     "build:api": "npm run build --workspace=apps/api",
     "build:web": "npm run build --workspace=apps/web",
+    "build:shared": "npm run build --workspace=packages/shared",
+    "build:all": "npm run build:shared && npm run build:api && npm run build:web",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces --if-present"
   },

@@ -1,5 +1,6 @@
 {
-  "buildCommand": "npm run build --workspace=apps/web",
+  "rootDirectory": ".",
+  "buildCommand": "npm run build:all",
   "outputDirectory": "apps/web/dist",
   "installCommand": "npm install",
   "framework": "vite",
