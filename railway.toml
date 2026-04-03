@@ -1,10 +1,10 @@
 # railway.toml — Atom OS API deployment config
 [build]
 builder = "nixpacks"
-buildCommand = "npm install && npm run build --workspace=packages/shared && npm run build --workspace=apps/api"
+buildCommand = "npm install && cd packages/shared && npm run build && cd ../../apps/api && npm run build"
 
 [deploy]
-startCommand = "npm run start --workspace=apps/api"
+startCommand = "cd apps/api && node dist/index.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
