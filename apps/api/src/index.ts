@@ -58,10 +58,27 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL ?? 'http://localhost:5173',
-    'https://atom-os.vercel.app', // production frontend
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    const allowed = [
+      process.env.FRONTEND_URL ?? 'http://localhost:5173',
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ];
+
+    // Allow any Vercel domain (production + preview deployments)
+    const isVercel = /^https:\/\/atom-os.*\.vercel\.app$/.test(origin);
+    const isAllowed = allowed.includes(origin) || isVercel;
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
