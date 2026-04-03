@@ -9,7 +9,7 @@ import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
 import { supabaseAdmin } from '../utils/supabase';
-import { ok, serverError, forbidden, notFound } from '../utils/response';
+import { ok, badRequest, serverError, forbidden, notFound } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
 import { requireRole, requireGymContext } from '../middleware/roles';
 
@@ -153,8 +153,8 @@ router.get('/config', async (req, res) => {
 router.patch('/config', async (req, res) => {
   try {
     const { qr_rotation_interval_s } = req.body;
-    if (!qr_rotation_interval_s || qr_rotation_interval_s < 10) {
-      return serverError(res, 'Minimum interval is 10 seconds');
+    if (!qr_rotation_interval_s || qr_rotation_interval_s < 10 || qr_rotation_interval_s > 2592000) {
+      return badRequest(res, 'Interval must be between 10 seconds and 30 days (2,592,000 seconds)');
     }
 
     const { data, error } = await supabaseAdmin

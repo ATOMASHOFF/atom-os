@@ -94,6 +94,7 @@ git push -u origin master
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_ANON_KEY=eyJ...
    SUPABASE_SERVICE_ROLE_KEY=eyJ...
+   ANTHROPIC_API_KEY=sk-ant-...     (optional: for AI Coach feature)
    FRONTEND_URL=https://your-app.vercel.app  (set after Vercel deploy)
    ```
 
@@ -110,8 +111,8 @@ git push -u origin master
 
 1. Go to https://vercel.com → New Project → Import Git Repository
 2. Select atom-os repo
-3. Framework: Vite
-4. Root directory: apps/web
+3. **Root Directory**: Set to `apps/web` (critical for monorepo!)
+4. Framework: Vite (auto-detected)
 
 5. Set Environment Variables:
    ```

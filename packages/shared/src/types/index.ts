@@ -186,3 +186,31 @@ export interface GymStats {
   checkins_this_week: number;
   pending_requests: number;
 }
+
+// ─── AI WORKOUT PLAN ──────────────────────────────────────────────────────
+
+export interface PlanExercise {
+  exercise_name: string;
+  exercise_id: string | null;
+  sets: number;
+  reps: string;
+  rest_sec: number;
+  notes: string;
+  category: string | null;
+  equipment: string | null;
+}
+
+export interface PlanDay {
+  day_number: number;
+  label: string;
+  focus: string;
+  exercises: PlanExercise[];
+}
+
+export interface WorkoutPlan {
+  title: string;
+  description: string;
+  duration_weeks: number;
+  days: PlanDay[];
+  tips: string[];
+}

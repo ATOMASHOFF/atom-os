@@ -8,7 +8,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore, useUser } from '@/store/auth';
 import {
   LayoutDashboard, Users, QrCode, Dumbbell, Activity,
-  Building2, LogOut, ChevronRight, User, ScanLine, Settings, Menu, X, TrendingUp, Lock,
+  Building2, LogOut, ChevronRight, User, ScanLine, Settings, Menu, X, TrendingUp, Lock, Sparkles,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useQuery } from '@tanstack/react-query';
@@ -20,30 +20,31 @@ type Role = 'super_admin' | 'gym_admin' | 'member';
 const NAV: Record<Role, { to: string; icon: React.ElementType; label: string }[]> = {
   super_admin: [
     { to: '/super/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/super/gyms',      icon: Building2,       label: 'Gyms'      },
-    { to: '/super/users',     icon: Users,           label: 'Users'     },
+    { to: '/super/gyms', icon: Building2, label: 'Gyms' },
+    { to: '/super/users', icon: Users, label: 'Users' },
   ],
   gym_admin: [
-    { to: '/admin/dashboard',  icon: LayoutDashboard, label: 'Dashboard'  },
-    { to: '/admin/members',    icon: Users,           label: 'Members'    },
-    { to: '/admin/attendance', icon: Activity,        label: 'Attendance' },
-    { to: '/admin/analytics',  icon: TrendingUp,      label: 'Analytics'  },
-    { to: '/admin/qr',         icon: QrCode,          label: 'QR Screen'  },
-    { to: '/admin/settings',   icon: Settings,        label: 'Settings'   },
+    { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/admin/members', icon: Users, label: 'Members' },
+    { to: '/admin/attendance', icon: Activity, label: 'Attendance' },
+    { to: '/admin/analytics', icon: TrendingUp, label: 'Analytics' },
+    { to: '/admin/qr', icon: QrCode, label: 'QR Screen' },
+    { to: '/admin/settings', icon: Settings, label: 'Settings' },
   ],
   member: [
-    { to: '/member/dashboard', icon: LayoutDashboard, label: 'Home'     },
-    { to: '/member/workouts',  icon: Dumbbell,        label: 'Workouts' },
-    { to: '/member/progress',  icon: TrendingUp,      label: 'Progress' },
-    { to: '/member/checkin',   icon: ScanLine,        label: 'Check In' },
-    { to: '/member/profile',   icon: User,            label: 'Profile'  },
+    { to: '/member/dashboard', icon: LayoutDashboard, label: 'Home' },
+    { to: '/member/workouts', icon: Dumbbell, label: 'Workouts' },
+    { to: '/member/ai-plan', icon: Sparkles, label: 'AI Coach' },
+    { to: '/member/progress', icon: TrendingUp, label: 'Progress' },
+    { to: '/member/checkin', icon: ScanLine, label: 'Check In' },
+    { to: '/member/profile', icon: User, label: 'Profile' },
   ],
 };
 
 const ROLE_LABEL: Record<Role, string> = {
   super_admin: 'Super Admin',
-  gym_admin:   'Gym Admin',
-  member:      'Member',
+  gym_admin: 'Gym Admin',
+  member: 'Member',
 };
 
 function Avatar({ name }: { name?: string }) {
@@ -57,10 +58,10 @@ function Avatar({ name }: { name?: string }) {
 }
 
 export default function AppLayout({ role }: { role: Role }) {
-  const user          = useUser();
-  const { logout }    = useAuthStore();
-  const navigate      = useNavigate();
-  const items         = NAV[role];
+  const user = useUser();
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
+  const items = NAV[role];
   const [drawer, setDrawer] = useState(false);
 
   // For members: check if they have an approved gym (gates Check In)
@@ -227,9 +228,9 @@ export default function AppLayout({ role }: { role: Role }) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30
                       bg-atom-surface/95 backdrop-blur border-t border-atom-border
                       grid"
-           style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}>
+        style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}>
         {items.map(({ to, icon: Icon, label }) => {
-          const isCheckin       = to === '/member/checkin';
+          const isCheckin = to === '/member/checkin';
           const isCheckinLocked = isCheckin && !hasApprovedGym;
 
           if (isCheckinLocked) {

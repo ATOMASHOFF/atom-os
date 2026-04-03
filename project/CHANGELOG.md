@@ -94,6 +94,43 @@
 - 50 TypeScript files | 7,213 lines | 0 TS errors
 - 16 pages | 2 migrations | 8 project memory files
 
+## v1.7.0 — 2026-04-03
+### Fix: QR Generation + Dynamic Time Limits (3min → 30 days)
+- Fixed QR generation: added `badRequest` import to qr.ts route
+- Database: `qr_rotation_interval_s` CHECK constraint extended from `>= 10` to `>= 10 AND <= 2592000` (30 days)
+- Default interval changed from 30s to 180s (3 minutes)
+- Backend validation: max interval now 2,592,000 seconds (30 days)
+- AdminSettings: presets expanded to 3min, 5min, 15min, 30min, 1hr, 1 day, 1 week, 1 month
+- AdminQRScreen: settings modal now includes quick preset buttons + `formatInterval` helper
+- AdminQRScreen: input max changed from 3600 to 2592000
+- Both AdminSettings and AdminQRScreen show human-readable interval labels
+
+## v1.6.0 — 2026-04-03
+### Feature: AI Workout Plan Generator
+- New `/api/ai/generate-plan` endpoint using Anthropic Claude API
+  - Takes user preferences: goal, days/week, experience, equipment, focus areas
+  - Grounds AI with 60 exercises from DB — exercise names matched to IDs
+  - Returns structured WorkoutPlan with days, exercises, sets, reps, rest, tips
+  - Rate limiting handled, error recovery for malformed JSON
+- `@anthropic-ai/sdk` added to apps/api dependencies
+- `ANTHROPIC_API_KEY` added to .env.example
+- Shared types: `WorkoutPlan`, `PlanDay`, `PlanExercise` in types/index.ts
+- Shared validator: `GeneratePlanSchema` with Zod enums for goal, experience, equipment, focus
+- MemberAIPlan page (apps/web/src/pages/member/MemberAIPlan.tsx):
+  - 4-step wizard: Goal → Schedule → Equipment → Notes/Generate
+  - Step indicator with progress dots
+  - Plan results view with per-day exercise tables
+  - "Log Workout" button per day — creates workout log + all sets automatically
+  - "Regenerate" button to restart with new preferences
+  - Pro tips section from AI
+- aiApi client added to lib/api.ts
+- Route: /member/ai-plan wired in App.tsx
+- Nav: "AI Coach" tab (Sparkles icon) added between Workouts and Progress
+
+### Stats
+- 69 TypeScript files | 8,889 lines | 0 TS errors
+- 17 pages | 2 migrations | 8 project memory files
+
 ## v1.5.0 — 2026-03-30
 ### Feature: New member onboarding + check-in gating
 - NewMemberWelcome (components/member/NewMemberWelcome.tsx)

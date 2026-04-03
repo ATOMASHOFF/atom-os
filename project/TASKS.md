@@ -1,4 +1,4 @@
-# TASKS.md — v1.4.0 FINAL
+# TASKS.md — v1.7.0
 
 ## ✅ Completed — Full MVP
 
@@ -26,6 +26,7 @@
 - [x] /api/qr — generate, auto-rotate, config
 - [x] /api/checkins — 7-step secure scan, gym history, today
 - [x] /api/workouts — logs CRUD, sets CRUD, exercise library, stats
+- [x] /api/ai — generate-plan (Anthropic Claude, exercise-grounded)
 - [x] /api/admin — global KPIs, all-gym stats, user management
 - [x] vercel.json, railway.toml deployment configs
 
@@ -58,9 +59,10 @@
 - [x] SubscriptionModal — plan picker, date auto-calc, amount, notes
 - [x] SubscriptionBanner — expiry warnings for members
 
-#### Member (5 pages + 2 components)
+#### Member (6 pages + 2 components)
 - [x] MemberDashboard — status, subscription alerts, CTA, recent activity
 - [x] MemberWorkouts — workout sessions + sets/reps/weight CRUD
+- [x] MemberAIPlan — 4-step wizard + plan results + log workout per day
 - [x] MemberProgress — weekly/monthly charts + streak + session log
 - [x] MemberCheckin — camera QR scanner + validation + history
 - [x] MemberProfile — edit profile + join gym by code + gym list
@@ -97,13 +99,28 @@
 - [ ] Bulk member import (CSV upload)
 - [ ] Email/WhatsApp notifications on membership approval
 - [ ] Razorpay payment integration + invoice PDF generation
-- [ ] AI workout plan generator (Anthropic Claude API)
+- [x] AI workout plan generator (Anthropic Claude API) ← DONE in v1.6.0
 - [ ] React Native mobile app (same APIs, zero rewrite)
 - [ ] Multi-gym member support (member joins multiple gyms)
 - [ ] Body measurements / progress photos tracker
 - [ ] Gym revenue dashboard with MRR tracking
 
-## ✅ Also completed in v1.5.0
+## ✅ Completed in v1.7.0
+- [x] QR Generation fix + Dynamic Time Limits (3min → 30 days)
+  - Fixed `badRequest` import in qr.ts route
+  - DB constraint: `qr_rotation_interval_s` now allows up to 2,592,000s (30 days)
+  - Default interval: 30s → 180s (3 min)
+  - AdminSettings: 8 presets (3min → 1 month)
+  - AdminQRScreen: quick preset buttons + formatInterval helper
+  - 69 TypeScript files | 8,889 lines | 0 TS errors
+
+## ✅ Completed in v1.6.0
+- [x] AI Workout Plan Generator (Anthropic Claude API)
+  - Backend: `/api/ai/generate-plan` endpoint with exercise grounding
+  - Shared: `WorkoutPlan`, `PlanDay`, `PlanExercise` types + `GeneratePlanSchema`
+  - Frontend: 4-step wizard → plan results → "Log Workout" per day
+
+## ✅ Completed in v1.5.0
 - [x] New member onboarding flow (3-step welcome modal, first-login only)
 - [x] Check-in nav lock in desktop sidebar + mobile bottom tab
 - [x] MemberCheckin: full onboarding page when no gym joined

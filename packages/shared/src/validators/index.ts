@@ -130,3 +130,16 @@ export type CreateWorkoutLogInput = z.infer<typeof CreateWorkoutLogSchema>;
 export type CreateWorkoutSetInput = z.infer<typeof CreateWorkoutSetSchema>;
 export type CreateExerciseInput = z.infer<typeof CreateExerciseSchema>;
 export type ScanQRInput = z.infer<typeof ScanQRSchema>;
+
+// ─── AI WORKOUT PLAN ─────────────────────────────────────────────────────
+
+export const GeneratePlanSchema = z.object({
+  goal: z.enum(['muscle_gain', 'fat_loss', 'strength', 'endurance', 'general_fitness']),
+  days_per_week: z.number().int().min(2).max(6),
+  experience_level: z.enum(['beginner', 'intermediate', 'advanced']),
+  equipment: z.array(z.enum(['barbell', 'dumbbell', 'machine', 'cable', 'bodyweight', 'kettlebell', 'resistance_band', 'other'])).min(1, 'Select at least one equipment type'),
+  focus_areas: z.array(z.enum(['chest', 'back', 'shoulders', 'arms', 'legs', 'core', 'full_body'])).optional(),
+  notes: z.string().max(500).optional(),
+});
+
+export type GeneratePlanInput = z.infer<typeof GeneratePlanSchema>;

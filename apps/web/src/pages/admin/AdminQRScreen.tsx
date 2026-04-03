@@ -8,6 +8,15 @@ import { qrApi } from '@/lib/api';
 import { RefreshCw, Maximize2, Settings, Clock, Wifi, WifiOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+function formatInterval(seconds: number): string {
+  if (seconds >= 2592000) return `${Math.floor(seconds / 2592000)}mo`;
+  if (seconds >= 604800) return `${Math.floor(seconds / 604800)}wk`;
+  if (seconds >= 86400) return `${Math.floor(seconds / 86400)}d`;
+  if (seconds >= 3600) return `${Math.floor(seconds / 3600)}h`;
+  if (seconds >= 60) return `${Math.floor(seconds / 60)}m`;
+  return `${seconds}s`;
+}
+
 export default function AdminQRScreen() {
   const [fullscreen, setFullscreen] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
@@ -62,7 +71,7 @@ export default function AdminQRScreen() {
 
   return (
     <div className={`${fullscreen ? 'fixed inset-0 z-50' : ''} bg-atom-bg flex flex-col`}
-         style={{ minHeight: fullscreen ? '100vh' : 'calc(100vh - 0px)' }}>
+      style={{ minHeight: fullscreen ? '100vh' : 'calc(100vh - 0px)' }}>
 
       {/* ── HEADER ── */}
       {!fullscreen && (
@@ -118,11 +127,10 @@ export default function AdminQRScreen() {
         </div>
 
         {/* QR Code */}
-        <div className={`relative p-6 rounded-2xl border-2 transition-all duration-500 ${
-          isExpiring
-            ? 'border-atom-warning animate-pulse-gold bg-atom-warning/5'
-            : 'border-atom-gold/40 bg-atom-surface'
-        }`}>
+        <div className={`relative p-6 rounded-2xl border-2 transition-all duration-500 ${isExpiring
+          ? 'border-atom-warning animate-pulse-gold bg-atom-warning/5'
+          : 'border-atom-gold/40 bg-atom-surface'
+          }`}>
           {isLoading ? (
             <div className="w-64 h-64 flex items-center justify-center">
               <div className="w-10 h-10 border-2 border-atom-gold border-t-transparent rounded-full animate-spin" />
@@ -158,9 +166,8 @@ export default function AdminQRScreen() {
           {/* Progress bar */}
           <div className="w-64 h-1.5 bg-atom-border rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-1000 ${
-                isExpiring ? 'bg-atom-warning' : 'bg-atom-gold'
-              }`}
+              className={`h-full rounded-full transition-all duration-1000 ${isExpiring ? 'bg-atom-warning' : 'bg-atom-gold'
+                }`}
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -204,15 +211,30 @@ export default function AdminQRScreen() {
               <div>
                 <label className="label">Rotation Interval (seconds)</label>
                 <input
-                  type="number" min={10} max={3600}
+                  type="number" min={10} max={2592000}
                   className="input"
                   value={newInterval}
                   onChange={e => setNewInterval(Number(e.target.value))}
                 />
                 <p className="text-atom-muted text-xs mt-1.5">
-                  Current: {interval}s ({Math.floor(interval / 60)}m {interval % 60}s)
-                  · Minimum: 10s
+                  Current: {interval}s ({formatInterval(interval)})
+                  · Min: 10s · Max: 30 days
                 </p>
+                {/* Quick presets */}
+                <div className="flex gap-1.5 mt-2 flex-wrap">
+                  {[180, 300, 900, 3600, 86400, 604800, 2592000].map(v => (
+                    <button
+                      key={v}
+                      onClick={() => setNewInterval(v)}
+                      className={`px-2 py-1 rounded text-xs font-mono transition-all ${newInterval === v
+                        ? 'bg-atom-gold/20 text-atom-gold border border-atom-gold/40'
+                        : 'bg-atom-surface border border-atom-border text-atom-muted hover:border-atom-gold/30'
+                        }`}
+                    >
+                      {formatInterval(v)}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="flex gap-3">
                 <button className="btn-ghost flex-1" onClick={() => setShowSettings(false)}>Cancel</button>

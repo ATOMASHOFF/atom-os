@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS public.gyms (
   website_url             TEXT,
   status                  gym_status NOT NULL DEFAULT 'trial',
   -- QR rotation config (in seconds): default 30s
-  qr_rotation_interval_s  INTEGER NOT NULL DEFAULT 30 CHECK (qr_rotation_interval_s >= 10),
+  qr_rotation_interval_s  INTEGER NOT NULL DEFAULT 180 CHECK (qr_rotation_interval_s >= 10 AND qr_rotation_interval_s <= 2592000),
   -- Platform billing (Super Admin manages this)
   platform_plan           TEXT,
   platform_plan_expires_at TIMESTAMPTZ,

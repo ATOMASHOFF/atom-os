@@ -24,6 +24,7 @@ import membershipRouter from './routes/membership';
 import qrRouter from './routes/qr';
 import checkinsRouter from './routes/checkins';
 import workoutsRouter from './routes/workouts';
+import aiRouter from './routes/ai';
 import adminRouter from './routes/admin';
 
 const app = express();
@@ -36,8 +37,8 @@ const PORT = parseInt(process.env.PORT ?? '4000', 10);
 app.get('/health', (req, res) => {
   console.log(`[HEALTH] Check received from ${req.ip}`);
   const missingVars = [
-    !process.env.SUPABASE_URL              && 'SUPABASE_URL',
-    !process.env.SUPABASE_ANON_KEY         && 'SUPABASE_ANON_KEY',
+    !process.env.SUPABASE_URL && 'SUPABASE_URL',
+    !process.env.SUPABASE_ANON_KEY && 'SUPABASE_ANON_KEY',
     !process.env.SUPABASE_SERVICE_ROLE_KEY && 'SUPABASE_SERVICE_ROLE_KEY',
   ].filter(Boolean);
 
@@ -106,6 +107,7 @@ app.use('/api/membership', membershipRouter);
 app.use('/api/qr', qrRouter);
 app.use('/api/checkins', checkinLimiter, checkinsRouter);
 app.use('/api/workouts', workoutsRouter);
+app.use('/api/ai', aiRouter);
 app.use('/api/admin', adminRouter);
 
 // ─── 404 HANDLER ──────────────────────────────────────────────────────────────

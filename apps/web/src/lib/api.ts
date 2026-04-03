@@ -80,10 +80,10 @@ export class ApiError extends Error {
 
 // HTTP method helpers
 export const api = {
-  get:    <T>(path: string) => request<T>(path),
-  post:   <T>(path: string, body?: unknown) =>
+  get: <T>(path: string) => request<T>(path),
+  post: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
-  patch:  <T>(path: string, body?: unknown) =>
+  patch: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: <T>(path: string) =>
     request<T>(path, { method: 'DELETE' }),
@@ -103,7 +103,7 @@ export const authApi = {
 // ─── SUPER ADMIN ──────────────────────────────────────────────────────────────
 export const adminApi = {
   stats: () => api.get<any>('/api/admin/stats'),
-  gyms:  () => api.get<any>('/api/admin/gyms'),
+  gyms: () => api.get<any>('/api/admin/gyms'),
   users: (params?: { page?: number; role?: string; search?: string }) => {
     const q = new URLSearchParams(params as any).toString();
     return api.get<any>(`/api/admin/users${q ? `?${q}` : ''}`);
@@ -114,64 +114,76 @@ export const adminApi = {
 
 // ─── GYMS ─────────────────────────────────────────────────────────────────────
 export const gymApi = {
-  list:         () => api.get<any>('/api/gyms'),
-  get:          (id: string) => api.get<any>(`/api/gyms/${id}`),
-  create:       (body: any) => api.post<any>('/api/gyms', body),
-  update:       (id: string, body: any) => api.patch<any>(`/api/gyms/${id}`, body),
-  setStatus:    (id: string, status: string) => api.patch<any>(`/api/gyms/${id}/status`, { status }),
-  assignAdmin:  (id: string, user_id: string) =>
+  list: () => api.get<any>('/api/gyms'),
+  get: (id: string) => api.get<any>(`/api/gyms/${id}`),
+  create: (body: any) => api.post<any>('/api/gyms', body),
+  update: (id: string, body: any) => api.patch<any>(`/api/gyms/${id}`, body),
+  setStatus: (id: string, status: string) => api.patch<any>(`/api/gyms/${id}/status`, { status }),
+  assignAdmin: (id: string, user_id: string) =>
     api.post<any>(`/api/gyms/${id}/assign-admin`, { user_id }),
 };
 
 // ─── MEMBERSHIP ───────────────────────────────────────────────────────────────
 export const membershipApi = {
-  browseGyms:     () => api.get<any>('/api/membership/gyms'),
-  join:           (gym_code: string) => api.post<any>('/api/membership/join', { gym_code }),
-  myStatus:       () => api.get<any>('/api/membership/status'),
-  requests:       () => api.get<any>('/api/membership/requests'),
-  updateRequest:  (id: string, body: any) => api.patch<any>(`/api/membership/requests/${id}`, body),
-  members:        (status?: string) => {
+  browseGyms: () => api.get<any>('/api/membership/gyms'),
+  join: (gym_code: string) => api.post<any>('/api/membership/join', { gym_code }),
+  myStatus: () => api.get<any>('/api/membership/status'),
+  requests: () => api.get<any>('/api/membership/requests'),
+  updateRequest: (id: string, body: any) => api.patch<any>(`/api/membership/requests/${id}`, body),
+  members: (status?: string) => {
     const q = status ? `?status=${status}` : '';
     return api.get<any>(`/api/membership/members${q}`);
   },
-  updateMember:   (id: string, body: any) => api.patch<any>(`/api/membership/members/${id}`, body),
-  stats:          () => api.get<any>('/api/membership/stats'),
+  updateMember: (id: string, body: any) => api.patch<any>(`/api/membership/members/${id}`, body),
+  stats: () => api.get<any>('/api/membership/stats'),
 };
 
 // ─── QR ───────────────────────────────────────────────────────────────────────
 export const qrApi = {
-  current:      () => api.get<any>('/api/qr/current'),
-  rotate:       () => api.post<any>('/api/qr/rotate'),
-  getConfig:    () => api.get<any>('/api/qr/config'),
+  current: () => api.get<any>('/api/qr/current'),
+  rotate: () => api.post<any>('/api/qr/rotate'),
+  getConfig: () => api.get<any>('/api/qr/config'),
   updateConfig: (qr_rotation_interval_s: number) =>
     api.patch<any>('/api/qr/config', { qr_rotation_interval_s }),
 };
 
 // ─── CHECKINS ─────────────────────────────────────────────────────────────────
 export const checkinApi = {
-  scan:    (token: string) => api.post<any>('/api/checkins/scan', { token }),
-  my:      (page = 1) => api.get<any>(`/api/checkins/my?page=${page}`),
-  gym:     (params?: { date?: string; page?: number }) => {
+  scan: (token: string) => api.post<any>('/api/checkins/scan', { token }),
+  my: (page = 1) => api.get<any>(`/api/checkins/my?page=${page}`),
+  gym: (params?: { date?: string; page?: number }) => {
     const q = new URLSearchParams(params as any).toString();
     return api.get<any>(`/api/checkins/gym${q ? `?${q}` : ''}`);
   },
-  today:   () => api.get<any>('/api/checkins/today'),
+  today: () => api.get<any>('/api/checkins/today'),
+};
+
+// ─── AI ───────────────────────────────────────────────────────────────────────
+export const aiApi = {
+  generatePlan: (body: {
+    goal: string;
+    days_per_week: number;
+    experience_level: string;
+    equipment: string[];
+    focus_areas?: string[];
+    notes?: string;
+  }) => api.post<any>('/api/ai/generate-plan', body),
 };
 
 // ─── WORKOUTS ─────────────────────────────────────────────────────────────────
 export const workoutApi = {
-  list:         (params?: { page?: number; month?: string }) => {
+  list: (params?: { page?: number; month?: string }) => {
     const q = new URLSearchParams(params as any).toString();
     return api.get<any>(`/api/workouts${q ? `?${q}` : ''}`);
   },
-  create:       (body: any) => api.post<any>('/api/workouts', body),
-  get:          (id: string) => api.get<any>(`/api/workouts/${id}`),
-  update:       (id: string, body: any) => api.patch<any>(`/api/workouts/${id}`, body),
-  delete:       (id: string) => api.delete<any>(`/api/workouts/${id}`),
-  addSet:       (logId: string, body: any) => api.post<any>(`/api/workouts/${logId}/sets`, body),
-  deleteSet:    (logId: string, setId: string) =>
+  create: (body: any) => api.post<any>('/api/workouts', body),
+  get: (id: string) => api.get<any>(`/api/workouts/${id}`),
+  update: (id: string, body: any) => api.patch<any>(`/api/workouts/${id}`, body),
+  delete: (id: string) => api.delete<any>(`/api/workouts/${id}`),
+  addSet: (logId: string, body: any) => api.post<any>(`/api/workouts/${logId}/sets`, body),
+  deleteSet: (logId: string, setId: string) =>
     api.delete<any>(`/api/workouts/${logId}/sets/${setId}`),
-  exercises:    () => api.get<any>('/api/workouts/exercises'),
+  exercises: () => api.get<any>('/api/workouts/exercises'),
   createExercise: (body: any) => api.post<any>('/api/workouts/exercises', body),
-  stats:        () => api.get<any>('/api/workouts/stats/summary'),
+  stats: () => api.get<any>('/api/workouts/stats/summary'),
 };

@@ -10,6 +10,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
     "@atom-os/shared": "*",
     "@supabase/supabase-js": "^2.43.1",
     "cors": "^2.8.5",

@@ -50,3 +50,4 @@
 | 46 | MemberCheckin no-gym onboarding page | ✅ | apps/web/src/pages/member/MemberCheckin.tsx |
 | 47 | MemberDashboard 3-state check-in banner | ✅ | apps/web/src/pages/member/MemberDashboard.tsx |
 | 48 | useQuery onSuccess → useEffect (v5 fix) | ✅ | apps/web/src/pages/member/MemberProfile.tsx |
+| 49 | AI Workout Plan Generator (Anthropic Claude) | ✅ | apps/api/src/routes/ai.ts, apps/web/src/pages/member/MemberAIPlan.tsx |

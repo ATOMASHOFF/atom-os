@@ -29,6 +29,7 @@ import MemberWorkouts from '@/pages/member/MemberWorkouts';
 import MemberCheckin from '@/pages/member/MemberCheckin';
 import MemberProfile from '@/pages/member/MemberProfile';
 import MemberProgress from '@/pages/member/MemberProgress';
+import MemberAIPlan from '@/pages/member/MemberAIPlan';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -90,7 +91,7 @@ function RoleRedirect() {
   const user = useUser();
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'super_admin') return <Navigate to="/super/dashboard" replace />;
-  if (user.role === 'gym_admin')   return <Navigate to="/admin/dashboard" replace />;
+  if (user.role === 'gym_admin') return <Navigate to="/admin/dashboard" replace />;
   return <Navigate to="/member/dashboard" replace />;
 }
 
@@ -119,65 +120,66 @@ function AppInit() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-      <Routes>
-        {/* Public */}
-        <Route path="/login"  element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/"       element={<RoleRedirect />} />
+        <Routes>
+          {/* Public */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/" element={<RoleRedirect />} />
 
-        {/* Super Admin */}
-        <Route path="/super" element={
-          <RequireAuth><RequireRole role="super_admin">
-            <AppLayout role="super_admin" />
-          </RequireRole></RequireAuth>
-        }>
-          <Route path="dashboard" element={<SuperDashboard />} />
-          <Route path="gyms"      element={<SuperGyms />} />
-          <Route path="users"     element={<SuperUsers />} />
-          <Route index element={<Navigate to="dashboard" replace />} />
-        </Route>
+          {/* Super Admin */}
+          <Route path="/super" element={
+            <RequireAuth><RequireRole role="super_admin">
+              <AppLayout role="super_admin" />
+            </RequireRole></RequireAuth>
+          }>
+            <Route path="dashboard" element={<SuperDashboard />} />
+            <Route path="gyms" element={<SuperGyms />} />
+            <Route path="users" element={<SuperUsers />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+          </Route>
 
-        {/* Gym Admin */}
-        <Route path="/admin" element={
-          <RequireAuth><RequireRole role="gym_admin">
-            <AppLayout role="gym_admin" />
-          </RequireRole></RequireAuth>
-        }>
-          <Route path="dashboard"  element={<AdminDashboard />} />
-          <Route path="members"    element={<AdminMembers />} />
-          <Route path="attendance" element={<AdminAttendance />} />
-          <Route path="qr"         element={<AdminQRScreen />} />
-          <Route path="settings"   element={<AdminSettings />} />
-          <Route path="analytics"  element={<AdminAnalytics />} />
-          <Route index element={<Navigate to="dashboard" replace />} />
-        </Route>
+          {/* Gym Admin */}
+          <Route path="/admin" element={
+            <RequireAuth><RequireRole role="gym_admin">
+              <AppLayout role="gym_admin" />
+            </RequireRole></RequireAuth>
+          }>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="members" element={<AdminMembers />} />
+            <Route path="attendance" element={<AdminAttendance />} />
+            <Route path="qr" element={<AdminQRScreen />} />
+            <Route path="settings" element={<AdminSettings />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+          </Route>
 
-        {/* Member */}
-        <Route path="/member" element={
-          <RequireAuth><RequireRole role="member">
-            <AppLayout role="member" />
-          </RequireRole></RequireAuth>
-        }>
-          <Route path="dashboard" element={<MemberDashboard />} />
-          <Route path="workouts"  element={<MemberWorkouts />} />
-          <Route path="progress"  element={<MemberProgress />} />
-          <Route path="checkin"   element={<MemberCheckin />} />
-          <Route path="profile"   element={<MemberProfile />} />
-          <Route index element={<Navigate to="dashboard" replace />} />
-        </Route>
+          {/* Member */}
+          <Route path="/member" element={
+            <RequireAuth><RequireRole role="member">
+              <AppLayout role="member" />
+            </RequireRole></RequireAuth>
+          }>
+            <Route path="dashboard" element={<MemberDashboard />} />
+            <Route path="workouts" element={<MemberWorkouts />} />
+            <Route path="progress" element={<MemberProgress />} />
+            <Route path="ai-plan" element={<MemberAIPlan />} />
+            <Route path="checkin" element={<MemberCheckin />} />
+            <Route path="profile" element={<MemberProfile />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+          </Route>
 
-        {/* Fallbacks */}
-        <Route path="/unauthorized" element={
-          <div className="min-h-screen bg-atom-bg flex items-center justify-center">
-            <div className="text-center">
-              <p className="font-display text-6xl text-atom-gold font-bold">403</p>
-              <p className="text-atom-muted mt-2">Access denied</p>
+          {/* Fallbacks */}
+          <Route path="/unauthorized" element={
+            <div className="min-h-screen bg-atom-bg flex items-center justify-center">
+              <div className="text-center">
+                <p className="font-display text-6xl text-atom-gold font-bold">403</p>
+                <p className="text-atom-muted mt-2">Access denied</p>
+              </div>
             </div>
-          </div>
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
     </ErrorBoundary>
   );
 }

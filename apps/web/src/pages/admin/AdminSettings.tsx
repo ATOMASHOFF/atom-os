@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 export default function AdminSettings() {
   const user = useUser();
-  const qc   = useQueryClient();
+  const qc = useQueryClient();
   const [copied, setCopied] = useState(false);
 
   const { data: gymData, isLoading } = useQuery({
@@ -28,14 +28,14 @@ export default function AdminSettings() {
   useEffect(() => {
     if (!gym) return;
     setForm({
-      name:        gym.name        ?? '',
+      name: gym.name ?? '',
       description: gym.description ?? '',
-      address:     gym.address     ?? '',
-      city:        gym.city        ?? '',
-      state:       gym.state       ?? '',
-      pincode:     gym.pincode     ?? '',
-      phone:       gym.phone       ?? '',
-      email:       gym.email       ?? '',
+      address: gym.address ?? '',
+      city: gym.city ?? '',
+      state: gym.state ?? '',
+      pincode: gym.pincode ?? '',
+      phone: gym.phone ?? '',
+      email: gym.email ?? '',
     });
     setQrInterval(gym.qr_rotation_interval_s ?? 180);
   }, [gym]);
@@ -209,27 +209,29 @@ export default function AdminSettings() {
         {/* Preset buttons */}
         <div className="flex gap-2 mb-4 flex-wrap">
           {[
-            { label: '30s',  value: 30  },
-            { label: '1min', value: 60  },
-            { label: '2min', value: 120 },
             { label: '3min', value: 180 },
             { label: '5min', value: 300 },
+            { label: '15min', value: 900 },
+            { label: '30min', value: 1800 },
+            { label: '1hr', value: 3600 },
+            { label: '1 day', value: 86400 },
+            { label: '1 week', value: 604800 },
+            { label: '1 month', value: 2592000 },
           ].map(({ label, value }) => (
             <button
               key={value}
               onClick={() => setQrInterval(value)}
-              className={`px-4 py-2 rounded-lg text-sm font-display uppercase tracking-wide transition-all ${
-                qrInterval === value
+              className={`px-4 py-2 rounded-lg text-sm font-display uppercase tracking-wide transition-all ${qrInterval === value
                   ? 'bg-atom-gold text-atom-bg font-700'
                   : 'border border-atom-border text-atom-muted hover:border-atom-gold hover:text-atom-gold'
-              }`}
+                }`}
             >
               {label}
             </button>
           ))}
           <div className="flex items-center gap-2">
             <input
-              type="number" min={10} max={3600}
+              type="number" min={10} max={2592000}
               className="input w-24 py-2 text-sm font-mono"
               placeholder="sec"
               value={qrInterval}
