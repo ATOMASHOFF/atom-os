@@ -3,7 +3,7 @@
 // All API calls go through this — never direct fetch() in components.
 /// <reference types="vite/client" />
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
 
 function getToken(): string | null {
   return localStorage.getItem('atom_token');
