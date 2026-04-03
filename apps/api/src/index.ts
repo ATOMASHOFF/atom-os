@@ -69,7 +69,8 @@ app.use(cors({
     ];
 
     // Allow any Vercel domain (production + preview deployments)
-    const isVercel = /^https:\/\/atom-os.*\.vercel\.app$/.test(origin);
+    const isVercel = /^https:\/\/atom-os.*\.vercel\.app$/.test(origin) ||
+      /^https:\/\/.*\.vercel\.app$/.test(origin);
     const isAllowed = allowed.includes(origin) || isVercel;
 
     if (isAllowed) {
