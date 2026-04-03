@@ -108,7 +108,7 @@ function AppInit() {
     return (
       <div className="min-h-screen bg-atom-bg flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-2 border-atom-gold border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-2 border-atom-accent border-t-transparent rounded-full animate-spin" />
           <span className="font-display text-atom-muted text-sm uppercase tracking-widest">
             Initializing Atom OS...
           </span>
@@ -172,7 +172,7 @@ function AppInit() {
           <Route path="/unauthorized" element={
             <div className="min-h-screen bg-atom-bg flex items-center justify-center">
               <div className="text-center">
-                <p className="font-display text-6xl text-atom-gold font-bold">403</p>
+                <p className="font-display text-6xl text-atom-accent font-bold">403</p>
                 <p className="text-atom-muted mt-2">Access denied</p>
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function App() {
             border: '1px solid #2A2A2A',
             fontFamily: 'DM Sans, sans-serif',
           },
-          success: { iconTheme: { primary: '#F5C842', secondary: '#0D0D0D' } },
+          success: { iconTheme: { primary: '#EF4444', secondary: '#0D0D0D' } },
           error: { iconTheme: { primary: '#EF4444', secondary: '#0D0D0D' } },
         }}
       />

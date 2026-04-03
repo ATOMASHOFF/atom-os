@@ -85,7 +85,7 @@ export default function AdminAttendance() {
                   </div>
                 </td>
                 <td className="py-3 px-4">
-                  <span className="font-mono text-atom-gold">
+                  <span className="font-mono text-atom-accent">
                     {format(new Date(c.checked_in_at), 'h:mm:ss a')}
                   </span>
                 </td>

@@ -49,8 +49,8 @@ const ROLE_LABEL: Record<Role, string> = {
 
 function Avatar({ name }: { name?: string }) {
   return (
-    <div className="w-8 h-8 rounded-full bg-atom-gold/20 border border-atom-gold/30
-                    flex items-center justify-center text-atom-gold font-display font-700
+    <div className="w-8 h-8 rounded-full bg-atom-accent/20 border border-atom-accent/30
+                    flex items-center justify-center text-atom-accent font-display font-700
                     text-xs flex-shrink-0">
       {name?.[0]?.toUpperCase() ?? '?'}
     </div>
@@ -109,15 +109,15 @@ export default function AppLayout({ role }: { role: Role }) {
         className={({ isActive }) => clsx(
           'flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-150',
           isActive
-            ? 'bg-atom-gold/10 text-atom-gold border border-atom-gold/20 font-500'
+            ? 'bg-atom-accent/10 text-atom-accent border border-atom-accent/20 font-500'
             : 'text-atom-muted hover:text-atom-text hover:bg-atom-border/40'
         )}
       >
         {({ isActive }) => (
           <>
-            <Icon size={17} className={isActive ? 'text-atom-gold' : ''} />
+            <Icon size={17} className={isActive ? 'text-atom-accent' : ''} />
             <span className="flex-1">{label}</span>
-            {isActive && <ChevronRight size={13} className="text-atom-gold" />}
+            {isActive && <ChevronRight size={13} className="text-atom-accent" />}
           </>
         )}
       </NavLink>
@@ -132,7 +132,7 @@ export default function AppLayout({ role }: { role: Role }) {
                         bg-atom-surface border-r border-atom-border z-30">
         {/* Logo */}
         <div className="p-6 border-b border-atom-border flex items-center gap-3">
-          <div className="w-8 h-8 bg-atom-gold rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-atom-accent rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="font-display font-800 text-atom-bg text-sm">A</span>
           </div>
           <div>
@@ -169,7 +169,7 @@ export default function AppLayout({ role }: { role: Role }) {
       <header className="md:hidden sticky top-0 z-30 bg-atom-surface/95 backdrop-blur
                          border-b border-atom-border flex items-center justify-between px-4 h-14">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-atom-gold rounded-md flex items-center justify-center">
+          <div className="w-7 h-7 bg-atom-accent rounded-md flex items-center justify-center">
             <span className="font-display font-800 text-atom-bg text-xs">A</span>
           </div>
           <span className="font-display font-700 text-atom-text uppercase tracking-widest text-sm">
@@ -260,15 +260,15 @@ export default function AppLayout({ role }: { role: Role }) {
           return (
             <NavLink key={to} to={to} className={({ isActive }) => clsx(
               'flex flex-col items-center justify-center py-2 gap-0.5 relative transition-all',
-              isActive ? 'text-atom-gold' : 'text-atom-muted'
+              isActive ? 'text-atom-accent' : 'text-atom-muted'
             )}>
               {({ isActive }) => (
                 <>
                   {isCheckin ? (
                     <div className={clsx(
                       'w-12 h-12 rounded-2xl flex items-center justify-center -mt-4 mb-0.5',
-                      'shadow-[0_-4px_20px_rgba(245,200,66,0.3)] transition-all',
-                      isActive ? 'bg-atom-gold' : 'bg-atom-gold/85'
+                      'shadow-[0_-4px_20px_rgba(239,68,68,0.3)] transition-all',
+                      isActive ? 'bg-atom-accent' : 'bg-atom-accent/85'
                     )}>
                       <Icon size={20} className="text-atom-bg" />
                     </div>
@@ -276,7 +276,7 @@ export default function AppLayout({ role }: { role: Role }) {
                     <div className="relative">
                       <Icon size={20} />
                       {isActive && (
-                        <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-atom-gold" />
+                        <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-atom-accent" />
                       )}
                     </div>
                   )}

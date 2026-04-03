@@ -92,8 +92,8 @@ export default function MemberProfile() {
       <div className="card mb-6">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-atom-gold/20 border border-atom-gold/30
-                            flex items-center justify-center text-atom-gold font-display font-800 text-2xl">
+            <div className="w-14 h-14 rounded-2xl bg-atom-accent/20 border border-atom-accent/30
+                            flex items-center justify-center text-atom-accent font-display font-800 text-2xl">
               {profile?.full_name?.[0]?.toUpperCase() ?? '?'}
             </div>
             <div>
@@ -210,8 +210,8 @@ export default function MemberProfile() {
           <div className="flex flex-col gap-3">
             {memberships.map((m: any) => (
               <div key={m.id} className="flex items-center gap-4 p-3 rounded-xl bg-atom-bg border border-atom-border/50">
-                <div className="w-10 h-10 rounded-lg bg-atom-gold/10 border border-atom-gold/20
-                                flex items-center justify-center text-atom-gold font-display font-700 flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-atom-accent/10 border border-atom-accent/20
+                                flex items-center justify-center text-atom-accent font-display font-700 flex-shrink-0">
                   {m.gym?.name?.[0]}
                 </div>
                 <div className="flex-1 min-w-0">

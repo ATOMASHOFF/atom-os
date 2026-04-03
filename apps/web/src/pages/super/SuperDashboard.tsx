@@ -71,7 +71,7 @@ export default function SuperDashboard() {
       <div className="card">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-display text-lg font-700 uppercase tracking-wide">All Gyms</h2>
-          <a href="/super/gyms" className="text-atom-gold text-sm hover:underline">Manage →</a>
+          <a href="/super/gyms" className="text-atom-accent text-sm hover:underline">Manage →</a>
         </div>
 
         <div className="overflow-x-auto">
@@ -99,7 +99,7 @@ export default function SuperDashboard() {
                     <p className="text-atom-muted text-xs">{gym.owner?.email}</p>
                   </td>
                   <td className="py-3 px-3">
-                    <span className="font-mono text-atom-gold bg-atom-gold/10 px-2 py-0.5 rounded text-xs">
+                    <span className="font-mono text-atom-accent bg-atom-accent/10 px-2 py-0.5 rounded text-xs">
                       {gym.gym_code}
                     </span>
                   </td>
@@ -121,7 +121,7 @@ export default function SuperDashboard() {
 
 function StatCard({ label, value, sub, icon: Icon, color, loading }: any) {
   const colors: Record<string, string> = {
-    gold:   'text-atom-gold bg-atom-gold/10',
+    gold:   'text-atom-accent bg-atom-accent/10',
     blue:   'text-atom-info bg-atom-info/10',
     green:  'text-atom-success bg-atom-success/10',
     yellow: 'text-atom-warning bg-atom-warning/10',

@@ -14,7 +14,7 @@
   }
 
   body {
-    background-color: #0D0D0D;
+    background-color: #0A0A0A;
     color: #F0F0F0;
     font-family: 'DM Sans', sans-serif;
     /* Prevent overscroll bounce on iOS */
@@ -40,15 +40,15 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #F5C842;
+    background: #EF4444;
   }
 }
 
 @layer components {
 
-  /* Gold divider line */
-  .gold-line {
-    @apply h-px w-full bg-gradient-to-r from-transparent via-atom-gold to-transparent opacity-30;
+  /* Accent divider line */
+  .accent-line {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-atom-accent to-transparent opacity-30;
   }
 
   /* Card surface */
@@ -56,14 +56,14 @@
     @apply bg-atom-surface border border-atom-border rounded-xl p-5;
   }
 
-  /* Primary button — gold */
+  /* Primary button — accent (red) */
   .btn-primary {
-    @apply bg-atom-gold text-atom-bg font-display font-bold tracking-wide px-6 py-3 rounded-lg text-sm uppercase hover:bg-atom-gold-dim active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply bg-atom-accent text-white font-display font-bold tracking-wide px-6 py-3 rounded-lg text-sm uppercase hover:bg-atom-accent-dim active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed;
   }
 
   /* Ghost button */
   .btn-ghost {
-    @apply border border-atom-border text-atom-text font-body font-medium px-6 py-3 rounded-lg text-sm hover:border-atom-gold hover:text-atom-gold transition-all duration-150 disabled:opacity-40;
+    @apply border border-atom-border text-atom-text font-body font-medium px-6 py-3 rounded-lg text-sm hover:border-atom-accent hover:text-atom-accent transition-all duration-150 disabled:opacity-40;
   }
 
   /* Danger button */
@@ -73,7 +73,7 @@
 
   /* Input field */
   .input {
-    @apply w-full bg-atom-bg border border-atom-border rounded-lg px-4 py-3 text-atom-text placeholder-atom-muted text-sm font-body focus:outline-none focus:border-atom-gold focus:ring-1 focus:ring-atom-gold/30 transition-all duration-150 disabled:opacity-50;
+    @apply w-full bg-atom-bg border border-atom-border rounded-lg px-4 py-3 text-atom-text placeholder-atom-muted text-sm font-body focus:outline-none focus:border-atom-accent focus:ring-1 focus:ring-atom-accent/30 transition-all duration-150 disabled:opacity-50;
   }
 
   /* Label */

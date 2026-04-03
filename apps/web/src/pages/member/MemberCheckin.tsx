@@ -209,8 +209,8 @@ export default function MemberCheckin() {
           <Link
             to="/member/profile"
             className="flex items-center justify-between w-full p-5 rounded-2xl
-                       bg-atom-gold text-atom-bg font-display font-700 uppercase tracking-wide
-                       hover:bg-atom-gold-dim transition-all group"
+                       bg-atom-accent text-atom-bg font-display font-700 uppercase tracking-wide
+                       hover:bg-atom-accent-dim transition-all group"
           >
             <span>Join a Gym Now</span>
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -233,9 +233,9 @@ export default function MemberCheckin() {
       <div className="card mb-6 overflow-hidden p-0">
         {!scanning && scanState === 'idle' && (
           <div className="flex flex-col items-center justify-center p-10 gap-5">
-            <div className="w-20 h-20 rounded-2xl bg-atom-gold/10 border-2 border-dashed border-atom-gold/40
+            <div className="w-20 h-20 rounded-2xl bg-atom-accent/10 border-2 border-dashed border-atom-accent/40
                             flex items-center justify-center">
-              <Camera size={32} className="text-atom-gold" />
+              <Camera size={32} className="text-atom-accent" />
             </div>
             <div className="text-center">
               <p className="font-display font-700 text-atom-text uppercase tracking-wide mb-1">
@@ -333,7 +333,7 @@ export default function MemberCheckin() {
           <p className="text-atom-muted text-sm text-center py-6">No check-ins yet</p>
         ) : checkins.map((c: any) => (
           <div key={c.id} className="flex items-center gap-3 py-2.5 border-b border-atom-border/40 last:border-0">
-            <CheckCircle2 size={14} className="text-atom-gold flex-shrink-0" />
+            <CheckCircle2 size={14} className="text-atom-accent flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-atom-text text-sm truncate">{c.gym?.name}</p>
               <p className="text-atom-muted text-xs">

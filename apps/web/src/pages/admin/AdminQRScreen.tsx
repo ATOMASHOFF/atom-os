@@ -113,7 +113,7 @@ export default function AdminQRScreen() {
         {/* Gym branding */}
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="w-6 h-6 bg-atom-gold rounded flex items-center justify-center">
+            <div className="w-6 h-6 bg-atom-accent rounded flex items-center justify-center">
               <span className="font-display font-800 text-atom-bg text-xs">A</span>
             </div>
             <span className="font-display font-700 text-atom-text uppercase tracking-widest text-sm">
@@ -128,12 +128,12 @@ export default function AdminQRScreen() {
 
         {/* QR Code */}
         <div className={`relative p-6 rounded-2xl border-2 transition-all duration-500 ${isExpiring
-          ? 'border-atom-warning animate-pulse-gold bg-atom-warning/5'
-          : 'border-atom-gold/40 bg-atom-surface'
+          ? 'border-atom-warning animate-pulse-accent bg-atom-warning/5'
+          : 'border-atom-accent/40 bg-atom-surface'
           }`}>
           {isLoading ? (
             <div className="w-64 h-64 flex items-center justify-center">
-              <div className="w-10 h-10 border-2 border-atom-gold border-t-transparent rounded-full animate-spin" />
+              <div className="w-10 h-10 border-2 border-atom-accent border-t-transparent rounded-full animate-spin" />
             </div>
           ) : error ? (
             <div className="w-64 h-64 flex flex-col items-center justify-center gap-3 text-atom-danger">
@@ -166,14 +166,14 @@ export default function AdminQRScreen() {
           {/* Progress bar */}
           <div className="w-64 h-1.5 bg-atom-border rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-1000 ${isExpiring ? 'bg-atom-warning' : 'bg-atom-gold'
+              className={`h-full rounded-full transition-all duration-1000 ${isExpiring ? 'bg-atom-warning' : 'bg-atom-accent'
                 }`}
               style={{ width: `${pct}%` }}
             />
           </div>
 
           <div className="flex items-center gap-2 text-atom-muted text-sm">
-            <Clock size={14} className={isExpiring ? 'text-atom-warning' : 'text-atom-gold'} />
+            <Clock size={14} className={isExpiring ? 'text-atom-warning' : 'text-atom-accent'} />
             <span className={`font-mono ${isExpiring ? 'text-atom-warning' : ''}`}>
               {secondsLeft > 0
                 ? `Refreshes in ${secondsLeft}s`
@@ -227,8 +227,8 @@ export default function AdminQRScreen() {
                       key={v}
                       onClick={() => setNewInterval(v)}
                       className={`px-2 py-1 rounded text-xs font-mono transition-all ${newInterval === v
-                        ? 'bg-atom-gold/20 text-atom-gold border border-atom-gold/40'
-                        : 'bg-atom-surface border border-atom-border text-atom-muted hover:border-atom-gold/30'
+                        ? 'bg-atom-accent/20 text-atom-accent border border-atom-accent/40'
+                        : 'bg-atom-surface border border-atom-border text-atom-muted hover:border-atom-accent/30'
                         }`}
                     >
                       {formatInterval(v)}

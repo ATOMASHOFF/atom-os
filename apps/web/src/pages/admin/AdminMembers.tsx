@@ -74,7 +74,7 @@ export default function AdminMembers() {
               onClick={() => setTab(t)}
               className={`px-4 py-2 rounded-md text-sm font-display uppercase tracking-wide transition-all ${
                 tab === t
-                  ? 'bg-atom-gold text-atom-bg'
+                  ? 'bg-atom-accent text-atom-bg'
                   : 'text-atom-muted hover:text-atom-text'
               }`}
             >
@@ -135,8 +135,8 @@ export default function AdminMembers() {
               <tr key={m.id} className="border-b border-atom-border/40 hover:bg-atom-border/20 transition-colors">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-atom-gold/20 flex items-center justify-center flex-shrink-0">
-                      <span className="text-atom-gold font-display font-700 text-xs">
+                    <div className="w-8 h-8 rounded-full bg-atom-accent/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-atom-accent font-display font-700 text-xs">
                         {m.user?.full_name?.[0] ?? '?'}
                       </span>
                     </div>
@@ -182,7 +182,7 @@ export default function AdminMembers() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => setSubMember(m)}
-                        className="flex items-center gap-1.5 text-atom-muted text-xs hover:text-atom-gold transition-colors"
+                        className="flex items-center gap-1.5 text-atom-muted text-xs hover:text-atom-accent transition-colors"
                       >
                         <CreditCard size={13} /> Subscription
                       </button>

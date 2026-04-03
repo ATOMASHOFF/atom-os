@@ -19,7 +19,7 @@ function ChartTooltip({ active, payload, label, unit = '' }: any) {
     <div className="bg-atom-surface border border-atom-border rounded-lg px-3 py-2 shadow-xl">
       <p className="text-atom-muted text-xs mb-1">{label}</p>
       {payload.map((p: any) => (
-        <p key={p.name} className="text-atom-gold text-sm font-mono font-500">
+        <p key={p.name} className="text-atom-accent text-sm font-mono font-500">
           {p.value}{unit}
         </p>
       ))}
@@ -121,7 +121,7 @@ export default function MemberProgress() {
                 onClick={() => setRange(w)}
                 className={`px-3 py-1 rounded-md text-xs font-display uppercase tracking-wide transition-all ${
                   range === w
-                    ? 'bg-atom-gold text-atom-bg font-700'
+                    ? 'bg-atom-accent text-atom-bg font-700'
                     : 'text-atom-muted hover:text-atom-text'
                 }`}
               >
@@ -138,8 +138,8 @@ export default function MemberProgress() {
             <AreaChart data={weeklyData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
               <defs>
                 <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#F5C842" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#F5C842" stopOpacity={0}   />
+                  <stop offset="5%"  stopColor="#EF4444" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0}   />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" vertical={false} />
@@ -155,10 +155,10 @@ export default function MemberProgress() {
               <Tooltip content={<ChartTooltip unit=" sessions" />} />
               <Area
                 type="monotone" dataKey="sessions"
-                stroke="#F5C842" strokeWidth={2}
+                stroke="#EF4444" strokeWidth={2}
                 fill="url(#goldGrad)"
-                dot={{ fill: '#F5C842', r: 3, strokeWidth: 0 }}
-                activeDot={{ r: 5, fill: '#F5C842' }}
+                dot={{ fill: '#EF4444', r: 3, strokeWidth: 0 }}
+                activeDot={{ r: 5, fill: '#EF4444' }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -189,7 +189,7 @@ export default function MemberProgress() {
                   axisLine={false} tickLine={false}
                 />
                 <Tooltip content={<ChartTooltip unit=" sessions" />} />
-                <Bar dataKey="count" fill="#F5C842" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="count" fill="#EF4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -244,8 +244,8 @@ export default function MemberProgress() {
                 key={log.id}
                 className="flex items-center gap-4 py-3 border-b border-atom-border/40 last:border-0"
               >
-                <div className="w-8 h-8 rounded-lg bg-atom-gold/10 flex items-center justify-center
-                                text-atom-gold font-mono text-xs font-700 flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-atom-accent/10 flex items-center justify-center
+                                text-atom-accent font-mono text-xs font-700 flex-shrink-0">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -277,7 +277,7 @@ export default function MemberProgress() {
 
 function StatCard({ icon: Icon, color, label, value, sub }: any) {
   const colors: Record<string, string> = {
-    gold:   'text-atom-gold    bg-atom-gold/10',
+    gold:   'text-atom-accent    bg-atom-accent/10',
     green:  'text-atom-success bg-atom-success/10',
     blue:   'text-atom-info    bg-atom-info/10',
     yellow: 'text-atom-warning bg-atom-warning/10',

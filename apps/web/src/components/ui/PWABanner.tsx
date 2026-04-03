@@ -10,9 +10,9 @@ export function InstallBanner() {
 
   return (
     <div className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80
-                    bg-atom-surface border border-atom-gold/40 rounded-2xl shadow-xl
+                    bg-atom-surface border border-atom-accent/40 rounded-2xl shadow-xl
                     p-4 flex items-start gap-3 z-40 animate-slide-up">
-      <div className="w-10 h-10 bg-atom-gold rounded-xl flex items-center justify-center flex-shrink-0">
+      <div className="w-10 h-10 bg-atom-accent rounded-xl flex items-center justify-center flex-shrink-0">
         <span className="font-display font-800 text-atom-bg text-lg">A</span>
       </div>
       <div className="flex-1 min-w-0">
@@ -25,9 +25,9 @@ export function InstallBanner() {
         <div className="flex gap-2 mt-3">
           <button
             onClick={install}
-            className="flex-1 bg-atom-gold text-atom-bg text-xs font-display font-700
+            className="flex-1 bg-atom-accent text-atom-bg text-xs font-display font-700
                        uppercase tracking-wide px-3 py-2 rounded-lg
-                       hover:bg-atom-gold-dim transition-colors flex items-center justify-center gap-1.5"
+                       hover:bg-atom-accent-dim transition-colors flex items-center justify-center gap-1.5"
           >
             <Download size={12} /> Install
           </button>

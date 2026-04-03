@@ -36,7 +36,7 @@ export default function AdminDashboard() {
           { label: 'Expired Subs',     value: stats.expired_subscriptions, icon: AlertCircle, color: 'red'  },
         ].map(({ label, value, icon: Icon, color }) => {
           const colors: Record<string, string> = {
-            gold: 'text-atom-gold bg-atom-gold/10', green: 'text-atom-success bg-atom-success/10',
+            gold: 'text-atom-accent bg-atom-accent/10', green: 'text-atom-success bg-atom-success/10',
             yellow: 'text-atom-warning bg-atom-warning/10', red: 'text-atom-danger bg-atom-danger/10',
           };
           return (
@@ -56,14 +56,14 @@ export default function AdminDashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-display text-base font-700 uppercase tracking-wide">Join Requests</h2>
-            <Link to="/admin/members" className="text-atom-gold text-xs hover:underline">View all →</Link>
+            <Link to="/admin/members" className="text-atom-accent text-xs hover:underline">View all →</Link>
           </div>
           {requests.length === 0 ? (
             <p className="text-atom-muted text-sm text-center py-8">No pending requests</p>
           ) : requests.slice(0, 5).map((r: any) => (
             <div key={r.id} className="flex items-center gap-3 py-3 border-b border-atom-border/50 last:border-0">
-              <div className="w-8 h-8 rounded-full bg-atom-gold/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-atom-gold font-display font-700 text-xs">
+              <div className="w-8 h-8 rounded-full bg-atom-accent/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-atom-accent font-display font-700 text-xs">
                   {r.user?.full_name?.[0] ?? '?'}
                 </span>
               </div>
@@ -72,7 +72,7 @@ export default function AdminDashboard() {
                 <p className="text-atom-muted text-xs truncate">{r.user?.email}</p>
               </div>
               <Link to="/admin/members"
-                className="text-atom-gold text-xs hover:underline flex-shrink-0">
+                className="text-atom-accent text-xs hover:underline flex-shrink-0">
                 Review
               </Link>
             </div>
@@ -108,8 +108,8 @@ export default function AdminDashboard() {
       </div>
 
       {/* QR CTA */}
-      <div className="mt-6 card border-atom-gold/30 bg-atom-gold/5 flex items-center gap-6">
-        <div className="w-12 h-12 bg-atom-gold rounded-xl flex items-center justify-center flex-shrink-0">
+      <div className="mt-6 card border-atom-accent/30 bg-atom-accent/5 flex items-center gap-6">
+        <div className="w-12 h-12 bg-atom-accent rounded-xl flex items-center justify-center flex-shrink-0">
           <QrCode size={24} className="text-atom-bg" />
         </div>
         <div className="flex-1">

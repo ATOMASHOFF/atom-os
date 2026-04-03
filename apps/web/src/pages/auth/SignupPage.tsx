@@ -33,7 +33,7 @@ export default function SignupPage() {
       <div className="w-full max-w-md animate-slide-up">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-8 h-8 bg-atom-gold rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-atom-accent rounded-lg flex items-center justify-center">
             <span className="font-display font-800 text-atom-bg text-sm">A</span>
           </div>
           <span className="font-display font-700 text-atom-text uppercase tracking-widest text-sm">
@@ -47,7 +47,7 @@ export default function SignupPage() {
           </h2>
           <p className="text-atom-muted text-sm mt-1">
             Already have an account?{' '}
-            <Link to="/login" className="text-atom-gold hover:underline">Sign in</Link>
+            <Link to="/login" className="text-atom-accent hover:underline">Sign in</Link>
           </p>
         </div>
 

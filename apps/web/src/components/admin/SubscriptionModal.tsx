@@ -94,8 +94,8 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
     >
       {/* Member info */}
       <div className="flex items-center gap-3 p-3 rounded-xl bg-atom-bg border border-atom-border mb-5">
-        <div className="w-9 h-9 rounded-full bg-atom-gold/20 border border-atom-gold/30
-                        flex items-center justify-center text-atom-gold font-display font-700 text-sm flex-shrink-0">
+        <div className="w-9 h-9 rounded-full bg-atom-accent/20 border border-atom-accent/30
+                        flex items-center justify-center text-atom-accent font-display font-700 text-sm flex-shrink-0">
           {member?.user?.full_name?.[0] ?? '?'}
         </div>
         <div className="min-w-0">
@@ -121,8 +121,8 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
                 className={`flex items-center gap-2.5 px-3 py-3 rounded-xl border text-sm
                             text-left transition-all duration-150 ${
                   plan === p.key
-                    ? 'border-atom-gold bg-atom-gold/10 text-atom-gold'
-                    : 'border-atom-border text-atom-muted hover:border-atom-gold/40 hover:text-atom-text'
+                    ? 'border-atom-accent bg-atom-accent/10 text-atom-accent'
+                    : 'border-atom-border text-atom-muted hover:border-atom-accent/40 hover:text-atom-text'
                 }`}
               >
                 <span className="text-base">{p.icon}</span>
@@ -132,7 +132,7 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
                     <p className="text-xs opacity-60 mt-0.5">{p.months} month{p.months > 1 ? 's' : ''}</p>
                   )}
                 </div>
-                {plan === p.key && <Check size={14} className="ml-auto text-atom-gold" />}
+                {plan === p.key && <Check size={14} className="ml-auto text-atom-accent" />}
               </button>
             ))}
           </div>
@@ -191,7 +191,7 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
 
         {/* Summary */}
         {startDate && endDate && (
-          <div className="p-3 rounded-xl bg-atom-gold/5 border border-atom-gold/20 text-sm">
+          <div className="p-3 rounded-xl bg-atom-accent/5 border border-atom-accent/20 text-sm">
             <div className="flex justify-between text-atom-muted mb-1">
               <span>Plan</span>
               <span className="text-atom-text capitalize font-500">{selectedPlan?.label}</span>
@@ -205,7 +205,7 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
             {amountPaid && (
               <div className="flex justify-between text-atom-muted">
                 <span>Amount</span>
-                <span className="text-atom-gold font-mono font-700">₹{amountPaid}</span>
+                <span className="text-atom-accent font-mono font-700">₹{amountPaid}</span>
               </div>
             )}
           </div>

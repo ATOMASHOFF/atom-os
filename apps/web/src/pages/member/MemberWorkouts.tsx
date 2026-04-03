@@ -96,7 +96,7 @@ export default function MemberWorkouts() {
 
       {/* ── ACTIVE SESSION ── */}
       {activeLog && (
-        <div className="card border-atom-gold/40 bg-atom-gold/5 mb-6">
+        <div className="card border-atom-accent/40 bg-atom-accent/5 mb-6">
           <div className="flex items-center justify-between mb-5">
             <div>
               <span className="badge-yellow text-xs mb-1">Active Session</span>
@@ -225,14 +225,14 @@ export default function MemberWorkouts() {
         ) : logs.map((log: any) => (
           <div
             key={log.id}
-            className="card flex items-center gap-4 cursor-pointer hover:border-atom-gold/30 transition-all"
+            className="card flex items-center gap-4 cursor-pointer hover:border-atom-accent/30 transition-all"
             onClick={() => !activeLog && setActiveLog(log)}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-              log.is_completed ? 'bg-atom-gold/20' : 'bg-atom-border'
+              log.is_completed ? 'bg-atom-accent/20' : 'bg-atom-border'
             }`}>
               {log.is_completed
-                ? <CheckCircle2 size={18} className="text-atom-gold" />
+                ? <CheckCircle2 size={18} className="text-atom-accent" />
                 : <Dumbbell size={18} className="text-atom-muted" />
               }
             </div>

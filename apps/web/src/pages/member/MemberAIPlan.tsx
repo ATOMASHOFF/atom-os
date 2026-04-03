@@ -59,14 +59,14 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
         <div className="flex items-center gap-2 mb-8">
             {Array.from({ length: total }).map((_, i) => (
                 <div key={i} className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-display font-700 transition-all ${i < current ? 'bg-atom-gold text-atom-bg' :
-                        i === current ? 'bg-atom-gold/20 text-atom-gold border border-atom-gold/40' :
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-display font-700 transition-all ${i < current ? 'bg-atom-accent text-atom-bg' :
+                        i === current ? 'bg-atom-accent/20 text-atom-accent border border-atom-accent/40' :
                             'bg-atom-border text-atom-muted'
                         }`}>
                         {i < current ? <Check size={14} /> : i + 1}
                     </div>
                     {i < total - 1 && (
-                        <div className={`w-8 h-0.5 ${i < current ? 'bg-atom-gold' : 'bg-atom-border'}`} />
+                        <div className={`w-8 h-0.5 ${i < current ? 'bg-atom-accent' : 'bg-atom-border'}`} />
                     )}
                 </div>
             ))}
@@ -171,7 +171,7 @@ export default function MemberAIPlan() {
                                     key={g.value}
                                     onClick={() => setGoal(g.value)}
                                     className={`card text-left flex items-center gap-4 transition-all ${goal === g.value
-                                        ? 'border-atom-gold bg-atom-gold/5'
+                                        ? 'border-atom-accent bg-atom-accent/5'
                                         : 'hover:border-atom-border'
                                         }`}
                                 >
@@ -180,7 +180,7 @@ export default function MemberAIPlan() {
                                         <p className="font-display font-600 text-sm uppercase tracking-wide">{g.label}</p>
                                         <p className="text-atom-muted text-xs">{g.desc}</p>
                                     </div>
-                                    {goal === g.value && <Check size={18} className="text-atom-gold" />}
+                                    {goal === g.value && <Check size={18} className="text-atom-accent" />}
                                 </button>
                             ))}
                         </div>
@@ -201,8 +201,8 @@ export default function MemberAIPlan() {
                                         key={d}
                                         onClick={() => setDaysPerWeek(d)}
                                         className={`flex-1 py-3 rounded-xl font-display font-700 text-lg transition-all ${daysPerWeek === d
-                                            ? 'bg-atom-gold text-atom-bg'
-                                            : 'bg-atom-surface border border-atom-border text-atom-muted hover:border-atom-gold/30'
+                                            ? 'bg-atom-accent text-atom-bg'
+                                            : 'bg-atom-surface border border-atom-border text-atom-muted hover:border-atom-accent/30'
                                             }`}
                                     >
                                         {d}
@@ -219,7 +219,7 @@ export default function MemberAIPlan() {
                                         key={e.value}
                                         onClick={() => setExperience(e.value)}
                                         className={`card text-left flex items-center gap-4 transition-all ${experience === e.value
-                                            ? 'border-atom-gold bg-atom-gold/5'
+                                            ? 'border-atom-accent bg-atom-accent/5'
                                             : 'hover:border-atom-border'
                                             }`}
                                     >
@@ -227,7 +227,7 @@ export default function MemberAIPlan() {
                                             <p className="font-display font-600 text-sm uppercase tracking-wide">{e.label}</p>
                                             <p className="text-atom-muted text-xs">{e.desc}</p>
                                         </div>
-                                        {experience === e.value && <Check size={18} className="text-atom-gold" />}
+                                        {experience === e.value && <Check size={18} className="text-atom-accent" />}
                                     </button>
                                 ))}
                             </div>
@@ -246,14 +246,14 @@ export default function MemberAIPlan() {
                                     key={eq.value}
                                     onClick={() => toggleEquipment(eq.value)}
                                     className={`card text-center py-4 transition-all ${equipment.includes(eq.value)
-                                        ? 'border-atom-gold bg-atom-gold/5'
+                                        ? 'border-atom-accent bg-atom-accent/5'
                                         : 'hover:border-atom-border'
                                         }`}
                                 >
-                                    <Weight size={20} className={`mx-auto mb-2 ${equipment.includes(eq.value) ? 'text-atom-gold' : 'text-atom-muted'}`} />
+                                    <Weight size={20} className={`mx-auto mb-2 ${equipment.includes(eq.value) ? 'text-atom-accent' : 'text-atom-muted'}`} />
                                     <p className="font-display font-600 text-xs uppercase tracking-wide">{eq.label}</p>
                                     {equipment.includes(eq.value) && (
-                                        <Check size={14} className="text-atom-gold mx-auto mt-1" />
+                                        <Check size={14} className="text-atom-accent mx-auto mt-1" />
                                     )}
                                 </button>
                             ))}
@@ -267,8 +267,8 @@ export default function MemberAIPlan() {
                                         key={fa.value}
                                         onClick={() => toggleFocus(fa.value)}
                                         className={`px-3 py-1.5 rounded-lg text-xs font-display uppercase tracking-wide transition-all ${focusAreas.includes(fa.value)
-                                            ? 'bg-atom-gold/20 text-atom-gold border border-atom-gold/40'
-                                            : 'bg-atom-surface border border-atom-border text-atom-muted hover:border-atom-gold/30'
+                                            ? 'bg-atom-accent/20 text-atom-accent border border-atom-accent/40'
+                                            : 'bg-atom-surface border border-atom-border text-atom-muted hover:border-atom-accent/30'
                                             }`}
                                     >
                                         {fa.label}
@@ -417,14 +417,14 @@ export default function MemberAIPlan() {
 
                         {/* Tips */}
                         {plan.tips.length > 0 && (
-                            <div className="card bg-atom-gold/5 border-atom-gold/20">
-                                <h3 className="font-display font-600 text-xs uppercase tracking-widest text-atom-gold mb-3">
+                            <div className="card bg-atom-accent/5 border-atom-accent/20">
+                                <h3 className="font-display font-600 text-xs uppercase tracking-widest text-atom-accent mb-3">
                                     <Zap size={13} className="inline mr-1.5" /> Pro Tips
                                 </h3>
                                 <ul className="space-y-2">
                                     {plan.tips.map((tip: string, i: number) => (
                                         <li key={i} className="text-atom-text text-sm flex items-start gap-2">
-                                            <span className="text-atom-gold mt-0.5">•</span>
+                                            <span className="text-atom-accent mt-0.5">•</span>
                                             {tip}
                                         </li>
                                     ))}
@@ -441,8 +441,8 @@ export default function MemberAIPlan() {
     return (
         <div className="page">
             <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-atom-gold/10 flex items-center justify-center">
-                    <Sparkles size={20} className="text-atom-gold" />
+                <div className="w-10 h-10 rounded-xl bg-atom-accent/10 flex items-center justify-center">
+                    <Sparkles size={20} className="text-atom-accent" />
                 </div>
                 <div>
                     <h1 className="section-title">AI Coach</h1>

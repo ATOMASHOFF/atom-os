@@ -17,7 +17,7 @@ function ChartTooltip({ active, payload, label }: any) {
   return (
     <div className="bg-atom-surface border border-atom-border rounded-lg px-3 py-2 shadow-xl">
       <p className="text-atom-muted text-xs mb-1">{label}</p>
-      <p className="text-atom-gold text-sm font-mono font-500">{payload[0]?.value}</p>
+      <p className="text-atom-accent text-sm font-mono font-500">{payload[0]?.value}</p>
     </div>
   );
 }
@@ -79,7 +79,7 @@ export default function AdminAnalytics() {
             { label: 'Expired Subs',    value: stats.expired_subscriptions ?? 0,icon: TrendingUp, color: 'red'    },
           ].map(({ label, value, icon: Icon, color }) => {
             const cls: Record<string, string> = {
-              gold: 'text-atom-gold bg-atom-gold/10', green: 'text-atom-success bg-atom-success/10',
+              gold: 'text-atom-accent bg-atom-accent/10', green: 'text-atom-success bg-atom-success/10',
               yellow: 'text-atom-warning bg-atom-warning/10', red: 'text-atom-danger bg-atom-danger/10',
             };
             return (
@@ -108,7 +108,7 @@ export default function AdminAnalytics() {
             {([14, 30, 60] as const).map(d => (
               <button key={d} onClick={() => setDays(d)}
                 className={`px-3 py-1 rounded-md text-xs font-display uppercase tracking-wide transition-all ${
-                  days === d ? 'bg-atom-gold text-atom-bg font-700' : 'text-atom-muted hover:text-atom-text'
+                  days === d ? 'bg-atom-accent text-atom-bg font-700' : 'text-atom-muted hover:text-atom-text'
                 }`}>
                 {d}d
               </button>
@@ -153,7 +153,7 @@ export default function AdminAnalytics() {
                 tick={{ fill: '#888', fontSize: 10, fontFamily: 'DM Sans' }}
                 axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip />} />
-              <Bar dataKey="checkins" fill="#F5C842" radius={[3, 3, 0, 0]} maxBarSize={28} />
+              <Bar dataKey="checkins" fill="#EF4444" radius={[3, 3, 0, 0]} maxBarSize={28} />
             </BarChart>
           </ResponsiveContainer>
         </div>

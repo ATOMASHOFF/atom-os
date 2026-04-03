@@ -62,9 +62,9 @@ export default function MemberDashboard() {
         /* ── Approved: full gold check-in CTA ── */
         <Link to="/member/checkin"
           className="flex items-center gap-5 p-6 mb-6 rounded-2xl
-                     bg-atom-gold text-atom-bg font-display
-                     hover:bg-atom-gold-dim transition-all duration-200 group
-                     shadow-[0_0_40px_rgba(245,200,66,0.2)]">
+                     bg-atom-accent text-atom-bg font-display
+                     hover:bg-atom-accent-dim transition-all duration-200 group
+                     shadow-[0_0_40px_rgba(239,68,68,0.2)]">
           <div className="w-14 h-14 bg-atom-bg/20 rounded-xl flex items-center justify-center flex-shrink-0
                           group-hover:bg-atom-bg/30 transition-colors">
             <ScanLine size={28} />
@@ -99,11 +99,11 @@ export default function MemberDashboard() {
         /* ── New member: join gym prompt ── */
         <Link to="/member/profile"
           className="flex items-center gap-4 p-5 mb-6 rounded-2xl
-                     bg-atom-surface border border-dashed border-atom-gold/30
-                     hover:border-atom-gold/60 hover:bg-atom-gold/5 transition-all group">
-          <div className="w-12 h-12 rounded-xl bg-atom-gold/10 border border-atom-gold/20
-                          flex items-center justify-center flex-shrink-0 group-hover:bg-atom-gold/20 transition-colors">
-            <Lock size={20} className="text-atom-gold" />
+                     bg-atom-surface border border-dashed border-atom-accent/30
+                     hover:border-atom-accent/60 hover:bg-atom-accent/5 transition-all group">
+          <div className="w-12 h-12 rounded-xl bg-atom-accent/10 border border-atom-accent/20
+                          flex items-center justify-center flex-shrink-0 group-hover:bg-atom-accent/20 transition-colors">
+            <Lock size={20} className="text-atom-accent" />
           </div>
           <div className="flex-1">
             <p className="font-display font-700 text-atom-text text-sm uppercase tracking-wide">
@@ -113,7 +113,7 @@ export default function MemberDashboard() {
               Join a gym with your 6-digit gym code → get approved → scan QR
             </p>
           </div>
-          <span className="text-atom-gold text-sm font-display font-700 uppercase tracking-wide
+          <span className="text-atom-accent text-sm font-display font-700 uppercase tracking-wide
                            group-hover:translate-x-1 transition-transform flex-shrink-0">
             Join →
           </span>
@@ -123,7 +123,7 @@ export default function MemberDashboard() {
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {[
-          { label: 'Total Workouts', value: workoutStats?.total_workouts ?? '—', icon: Dumbbell,    color: 'text-atom-gold  bg-atom-gold/10'    },
+          { label: 'Total Workouts', value: workoutStats?.total_workouts ?? '—', icon: Dumbbell,    color: 'text-atom-accent  bg-atom-accent/10'    },
           { label: 'This Week',      value: workoutStats?.workouts_this_week ?? '—', icon: Calendar, color: 'text-atom-info  bg-atom-info/10'    },
           { label: 'Check-ins',      value: checkinsData?.total ?? '—', icon: CheckCircle2,          color: 'text-atom-success bg-atom-success/10' },
         ].map(({ label, value, icon: Icon, color }) => (
@@ -142,7 +142,7 @@ export default function MemberDashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-base font-700 uppercase tracking-wide">Recent Check-ins</h2>
-            <Link to="/member/checkin" className="text-atom-gold text-xs hover:underline">History →</Link>
+            <Link to="/member/checkin" className="text-atom-accent text-xs hover:underline">History →</Link>
           </div>
           {recentCheckins.length === 0 ? (
             <p className="text-atom-muted text-sm text-center py-8">No check-ins yet</p>
@@ -168,7 +168,7 @@ export default function MemberDashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-base font-700 uppercase tracking-wide">Recent Workouts</h2>
-            <Link to="/member/workouts" className="text-atom-gold text-xs hover:underline">All →</Link>
+            <Link to="/member/workouts" className="text-atom-accent text-xs hover:underline">All →</Link>
           </div>
           {logs.length === 0 ? (
             <div className="text-center py-8">
@@ -180,7 +180,7 @@ export default function MemberDashboard() {
           ) : logs.map((log: any) => (
             <div key={log.id} className="flex items-center gap-3 py-2.5 border-b border-atom-border/40 last:border-0">
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                log.is_completed ? 'bg-atom-gold' : 'bg-atom-border'
+                log.is_completed ? 'bg-atom-accent' : 'bg-atom-border'
               }`} />
               <div className="flex-1 min-w-0">
                 <p className="text-atom-text text-sm font-500 truncate">
@@ -192,7 +192,7 @@ export default function MemberDashboard() {
                 </p>
               </div>
               {log.is_completed
-                ? <CheckCircle2 size={14} className="text-atom-gold flex-shrink-0" />
+                ? <CheckCircle2 size={14} className="text-atom-accent flex-shrink-0" />
                 : <span className="badge-gray text-xs">Draft</span>
               }
             </div>
@@ -207,8 +207,8 @@ export default function MemberDashboard() {
           <div className="flex flex-col gap-3">
             {memberships.map((m: any) => (
               <div key={m.id} className="flex items-center gap-4 p-3 rounded-xl bg-atom-bg border border-atom-border/50">
-                <div className="w-10 h-10 rounded-lg bg-atom-gold/10 border border-atom-gold/20
-                                flex items-center justify-center text-atom-gold font-display font-700 text-sm flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-atom-accent/10 border border-atom-accent/20
+                                flex items-center justify-center text-atom-accent font-display font-700 text-sm flex-shrink-0">
                   {m.gym?.name?.[0]}
                 </div>
                 <div className="flex-1 min-w-0">

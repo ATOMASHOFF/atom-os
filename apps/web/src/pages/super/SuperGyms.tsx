@@ -50,9 +50,9 @@ export default function SuperGyms() {
           ))
         ) : gyms.map((gym: any) => (
           <div key={gym.id} className="card flex items-center gap-6">
-            <div className="w-12 h-12 rounded-xl bg-atom-gold/10 border border-atom-gold/20
+            <div className="w-12 h-12 rounded-xl bg-atom-accent/10 border border-atom-accent/20
                             flex items-center justify-center flex-shrink-0">
-              <Building2 size={20} className="text-atom-gold" />
+              <Building2 size={20} className="text-atom-accent" />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -60,7 +60,7 @@ export default function SuperGyms() {
                 <p className="font-display font-700 text-atom-text uppercase tracking-wide">
                   {gym.name}
                 </p>
-                <span className="font-mono text-atom-gold bg-atom-gold/10 px-2 py-0.5 rounded text-xs">
+                <span className="font-mono text-atom-accent bg-atom-accent/10 px-2 py-0.5 rounded text-xs">
                   {gym.gym_code}
                 </span>
                 <StatusBadge status={gym.status} />

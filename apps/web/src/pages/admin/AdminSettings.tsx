@@ -68,7 +68,7 @@ export default function AdminSettings() {
 
   if (isLoading) return (
     <div className="page flex items-center justify-center min-h-[60vh]">
-      <div className="w-6 h-6 border-2 border-atom-gold border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-atom-accent border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -80,16 +80,16 @@ export default function AdminSettings() {
       </div>
 
       {/* ── GYM CODE CARD ── */}
-      <div className="card border-atom-gold/30 bg-atom-gold/5 mb-6">
+      <div className="card border-atom-accent/30 bg-atom-accent/5 mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-atom-gold rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 bg-atom-accent rounded-xl flex items-center justify-center flex-shrink-0">
             <Building2 size={22} className="text-atom-bg" />
           </div>
           <div className="flex-1">
             <p className="text-atom-muted text-xs font-display uppercase tracking-widest mb-1">
               Your Gym Code
             </p>
-            <p className="font-mono text-3xl font-800 text-atom-gold tracking-widest">
+            <p className="font-mono text-3xl font-800 text-atom-accent tracking-widest">
               {gym?.gym_code ?? '——'}
             </p>
             <p className="text-atom-muted text-xs mt-1">
@@ -105,7 +105,7 @@ export default function AdminSettings() {
           </button>
         </div>
 
-        <div className="gold-line my-4" />
+        <div className="accent-line my-4" />
 
         <div className="grid grid-cols-3 gap-4 text-center">
           {[
@@ -193,8 +193,8 @@ export default function AdminSettings() {
       {/* ── QR CONFIG ── */}
       <div className="card">
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-9 h-9 bg-atom-gold/10 rounded-lg flex items-center justify-center">
-            <QrCode size={18} className="text-atom-gold" />
+          <div className="w-9 h-9 bg-atom-accent/10 rounded-lg flex items-center justify-center">
+            <QrCode size={18} className="text-atom-accent" />
           </div>
           <div>
             <h2 className="font-display text-base font-700 uppercase tracking-wide">
@@ -222,8 +222,8 @@ export default function AdminSettings() {
               key={value}
               onClick={() => setQrInterval(value)}
               className={`px-4 py-2 rounded-lg text-sm font-display uppercase tracking-wide transition-all ${qrInterval === value
-                  ? 'bg-atom-gold text-atom-bg font-700'
-                  : 'border border-atom-border text-atom-muted hover:border-atom-gold hover:text-atom-gold'
+                  ? 'bg-atom-accent text-atom-bg font-700'
+                  : 'border border-atom-border text-atom-muted hover:border-atom-accent hover:text-atom-accent'
                 }`}
             >
               {label}

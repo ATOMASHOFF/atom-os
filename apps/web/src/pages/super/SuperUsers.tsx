@@ -93,7 +93,7 @@ export default function SuperUsers() {
                           roleMut.mutate({ id: u.id, role: next });
                         }
                       }}
-                      className="text-xs flex items-center gap-1.5 text-atom-muted hover:text-atom-gold transition-colors"
+                      className="text-xs flex items-center gap-1.5 text-atom-muted hover:text-atom-accent transition-colors"
                     >
                       <Shield size={13} />
                       Toggle Role

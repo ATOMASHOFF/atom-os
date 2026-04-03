@@ -13,7 +13,7 @@ const STORAGE_KEY = 'atom-welcome-seen';
 const STEPS = [
   {
     icon: Dumbbell,
-    color: 'bg-atom-gold/20 text-atom-gold',
+    color: 'bg-atom-accent/20 text-atom-accent',
     title: 'Log your workouts',
     desc: 'Track every session — sets, reps, weight. Your progress is always here.',
     to: '/member/workouts',
@@ -81,9 +81,9 @@ export function NewMemberWelcome() {
                 key={i}
                 className={`h-1 rounded-full transition-all duration-300 ${
                   i === step
-                    ? 'w-6 bg-atom-gold'
+                    ? 'w-6 bg-atom-accent'
                     : i < step
-                    ? 'w-3 bg-atom-gold/40'
+                    ? 'w-3 bg-atom-accent/40'
                     : 'w-3 bg-atom-border'
                 }`}
               />
@@ -124,8 +124,8 @@ export function NewMemberWelcome() {
               to={current.to}
               onClick={dismiss}
               className="flex items-center justify-center gap-2 w-full
-                         bg-atom-gold text-atom-bg font-display font-700 uppercase tracking-wide
-                         px-6 py-3.5 rounded-xl text-sm hover:bg-atom-gold-dim transition-colors"
+                         bg-atom-accent text-atom-bg font-display font-700 uppercase tracking-wide
+                         px-6 py-3.5 rounded-xl text-sm hover:bg-atom-accent-dim transition-colors"
             >
               {current.cta}
               <ArrowRight size={16} />
