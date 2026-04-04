@@ -1,4 +1,3 @@
-// apps/web/src/pages/auth/SignupPage.tsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
@@ -13,13 +12,21 @@ export default function SignupPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.email && !form.phone) {
+      toast.error('Enter your email or phone number');
+      return;
+    }
     if (form.password.length < 8) {
       toast.error('Password must be at least 8 characters');
       return;
     }
     try {
-      await signup({ email: form.email || undefined, phone: form.phone, password: form.password, full_name: form.full_name });
-      // Clear the welcome-seen flag so the onboarding modal shows on first login
+      await signup({
+        email: form.email || undefined,
+        phone: form.phone || undefined,
+        password: form.password,
+        full_name: form.full_name,
+      });
       localStorage.removeItem('atom-welcome-seen');
       toast.success('Account created! Sign in to get started.');
       navigate('/login');
@@ -31,7 +38,6 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-atom-bg flex items-center justify-center p-8">
       <div className="w-full max-w-md animate-slide-up">
-        {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-8 h-8 bg-atom-accent rounded-lg flex items-center justify-center">
             <span className="font-display font-800 text-atom-bg text-sm">A</span>
@@ -53,7 +59,7 @@ export default function SignupPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>
-            <label className="label">Full Name</label>
+            <label className="label">Full Name *</label>
             <input
               className="input"
               placeholder="Ashish Kumar"
@@ -64,19 +70,18 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label className="label">Phone Number *</label>
+            <label className="label">Phone Number</label>
             <input
               type="tel"
               className="input"
               placeholder="+91 9876543210"
               value={form.phone}
               onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-              required
             />
           </div>
 
           <div>
-            <label className="label">Email (Optional)</label>
+            <label className="label">Email</label>
             <input
               type="email"
               className="input"
@@ -84,10 +89,11 @@ export default function SignupPage() {
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
             />
+            <p className="text-atom-muted text-xs mt-1">Enter phone, email, or both</p>
           </div>
 
           <div>
-            <label className="label">Password</label>
+            <label className="label">Password *</label>
             <div className="relative">
               <input
                 type={showPw ? 'text' : 'password'}
@@ -106,11 +112,6 @@ export default function SignupPage() {
               </button>
             </div>
           </div>
-
-          <p className="text-atom-muted text-xs leading-relaxed">
-            By creating an account you'll be registered as a member. 
-            Gym admins are assigned by the platform administrator.
-          </p>
 
           <button type="submit" className="btn-primary w-full" disabled={isLoading}>
             {isLoading ? (

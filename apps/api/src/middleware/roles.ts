@@ -3,7 +3,8 @@
 // Usage: router.get('/route', authMiddleware, requireRole('gym_admin'), handler)
 
 import { Request, Response, NextFunction } from 'express';
-import { forbidden } from '../utils/response';
+import { forbidden, validationError } from '../utils/response';
+import { ZodSchema } from 'zod';
 import type { UserRole } from '@atom-os/shared';
 
 /**
@@ -38,17 +39,20 @@ export function requireGymContext(req: Request, res: Response, next: NextFunctio
 /**
  * Validate Zod schema on req.body. Returns 400 with field errors on failure.
  */
-import { ZodSchema } from 'zod';
-import { validationError } from '../utils/response';
-
 export function validate(schema: ZodSchema) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      validationError(res, result.error.flatten().fieldErrors);
+      const flattened = result.error.flatten();
+      // Merge formErrors into fieldErrors so they reach the client
+      const errors = {
+        ...flattened.fieldErrors,
+        ...(flattened.formErrors.length > 0 ? { _form: flattened.formErrors } : {}),
+      };
+      validationError(res, errors);
       return;
     }
-    req.body = result.data; // Replace with parsed/coerced data
+    req.body = result.data;
     next();
   };
 }

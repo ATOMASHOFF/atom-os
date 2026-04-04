@@ -7,26 +7,16 @@ import { z } from 'zod';
 
 export const SignupSchema = z.object({
   email: z.string().email('Invalid email address').optional(),
-  phone: z.string().regex(/^\+?[0-9\s\-().]{7,20}$/, 'Invalid phone number format').optional(),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format').optional(),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   full_name: z.string().min(2, 'Name must be at least 2 characters').max(100),
-}).superRefine((data, ctx) => {
-  if (!data.email && !data.phone) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Either email or phone number is required',
-      path: ['email'],
-    });
-  }
+}).refine(data => data.email || data.phone, {
+  message: 'Either email or phone number is required',
+  path: ['email'],
 });
 
 export const LoginSchema = z.object({
-  identifier: z.string().min(1, 'Email or phone is required').refine(val => {
-    // Allow valid email OR valid phone number
-    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-    const isPhone = /^\+?[1-9]\d{1,14}$/.test(val);
-    return isEmail || isPhone;
-  }, 'Enter a valid email address or phone number'),
+  identifier: z.string().min(1, 'Email or phone is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -60,7 +50,7 @@ export const CreateGymSchema = z.object({
   pincode: z.string().max(10).optional(),
   phone: z.string().max(20).optional(),
   email: z.string().email().optional(),
-  qr_rotation_interval_s: z.number().min(10).max(2592000).default(180),
+  qr_rotation_interval_s: z.number().min(10).max(3600).default(180),
 });
 
 export const UpdateGymSchema = CreateGymSchema.partial();
@@ -80,13 +70,14 @@ export const JoinGymSchema = z.object({
 });
 
 export const UpdateMembershipSchema = z.object({
-  status: z.enum(['approved', 'rejected', 'suspended', 'pending']).optional(),
+  status: z.enum(['approved', 'rejected', 'suspended']),
   notes: z.string().max(500).optional(),
   subscription_plan: z.enum(['monthly', 'quarterly', 'annual', 'pay_as_you_go']).optional(),
   subscription_start: z.string().optional(),
   subscription_end: z.string().optional(),
   amount_paid: z.number().min(0).optional(),
 });
+
 // ─── QR ───────────────────────────────────────────────────────────────────────
 
 export const ScanQRSchema = z.object({

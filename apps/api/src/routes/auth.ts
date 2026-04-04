@@ -59,7 +59,12 @@ router.post('/login', validate(LoginSchema), async (req, res) => {
     const { identifier, password } = req.body;
 
     // Detect if identifier is email or phone
+    // Validate identifier format here with a clear message
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+    const isPhone = /^\+?[0-9\s\-().]{7,20}$/.test(identifier);
+    if (!isEmail && !isPhone) {
+      return badRequest(res, 'Enter a valid email address or phone number');
+    }
 
     const authParams: any = { password };
     if (isEmail) {
