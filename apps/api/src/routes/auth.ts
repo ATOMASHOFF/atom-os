@@ -19,12 +19,12 @@ router.post('/signup', validate(SignupSchema), async (req, res) => {
     const authParams: any = {
       password,
       options: {
-        data: { full_name, phone },
+        data: { full_name, ...(phone && { phone }) },
       },
     };
 
     if (email) authParams.email = email;
-    if (phone) authParams.phone = phone;
+    if (phone && !email) authParams.phone = phone; // phone login only when no email
 
     const { data, error } = await supabase.auth.signUp(authParams);
 
