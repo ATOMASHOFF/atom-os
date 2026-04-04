@@ -1,6 +1,6 @@
 {
     "buildCommand": "cd ../.. && npm install && npm run build:shared && cd apps/web && npm run build",
-    "outputDirectory": "apps/web/dist",
+    "outputDirectory": "dist",
     "rewrites": [
         {
             "source": "/((?!api/.*).*)",
