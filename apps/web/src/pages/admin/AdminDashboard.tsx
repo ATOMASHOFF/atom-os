@@ -1,7 +1,7 @@
 // apps/web/src/pages/admin/AdminDashboard.tsx
 import { useQuery } from '@tanstack/react-query';
-import { membershipApi, checkinApi } from '@/lib/api';
-import { Users, Clock, Activity, AlertCircle, QrCode } from 'lucide-react';
+import { membershipApi, checkinApi, gymApi } from '@/lib/api';
+import { Users, Clock, Activity, AlertCircle, QrCode, Building2 } from 'lucide-react';
 import { useUser } from '@/store/auth';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -13,9 +13,17 @@ export default function AdminDashboard() {
   const { data: todayData }  = useQuery({ queryKey: ['checkins-today'], queryFn: checkinApi.today,   refetchInterval: 30_000 });
   const { data: reqData }    = useQuery({ queryKey: ['join-requests'],   queryFn: membershipApi.requests });
 
+  // Bug 8 fix: fetch gym details to show gym name in header (uses shared 'my-gym' cache)
+  const { data: gymData } = useQuery({
+    queryKey: ['my-gym'],
+    queryFn: gymApi.my,
+    enabled: !!user?.gym_id,
+  });
+
   const stats    = statsData ?? {};
   const today    = todayData ?? {};
   const requests = reqData?.requests ?? [];
+  const gymName  = gymData?.gym?.name ?? 'Your Gym';
 
   return (
     <div className="page">
@@ -23,8 +31,11 @@ export default function AdminDashboard() {
         <p className="text-atom-muted text-sm font-mono mb-1">
           {format(new Date(), 'EEEE, d MMMM yyyy')}
         </p>
-        <h1 className="section-title">Gym Dashboard</h1>
-        <p className="text-atom-muted text-sm mt-1">{user?.email}</p>
+        <h1 className="section-title">{gymName}</h1>
+        <p className="text-atom-muted text-sm mt-1 flex items-center gap-2">
+          <Building2 size={13} />
+          <span>Gym Admin · {user?.email}</span>
+        </p>
       </div>
 
       {/* Stats */}

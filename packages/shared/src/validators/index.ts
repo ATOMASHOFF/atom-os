@@ -6,13 +6,14 @@ import { z } from 'zod';
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 
 export const SignupSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Invalid email address').optional(),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   full_name: z.string().min(2, 'Name must be at least 2 characters').max(100),
 });
 
 export const LoginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  identifier: z.string().min(1, 'Email or phone is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -24,6 +25,15 @@ export const UpdateProfileSchema = z.object({
   height_cm: z.number().min(50).max(300).optional().nullable(),
   weight_kg: z.number().min(20).max(500).optional().nullable(),
   bio: z.string().max(500).optional().nullable(),
+
+  // Fitness & Emergency Profile
+  fitness_goal: z.string().max(100).optional().nullable(),
+  activity_level: z.string().max(100).optional().nullable(),
+  body_fat_pct: z.number().min(0).max(100).optional().nullable(),
+  injuries: z.string().max(500).optional().nullable(),
+  preferred_equipment: z.array(z.string()).optional().nullable(),
+  emergency_contact_name: z.string().max(100).optional().nullable(),
+  emergency_contact_phone: z.string().max(20).optional().nullable(),
 });
 
 // ─── GYMS ─────────────────────────────────────────────────────────────────────

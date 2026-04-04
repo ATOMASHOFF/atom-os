@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore, useUser } from '@/store/auth';
-import { membershipApi } from '@/lib/api';
+
 
 // Pages
 import LoginPage from '@/pages/auth/LoginPage';
@@ -64,28 +64,7 @@ function RequireRole({ role, children }: { role: string | string[]; children: Re
   return <>{children}</>;
 }
 
-// Guards /member/checkin — redirects to the checkin page itself (which shows the unlock UI)
-// The page handles the no-gym state with a rich onboarding UI rather than a hard block.
-// This guard only protects against non-members bypassing the nav lock via direct URL.
-// The actual feature lock is enforced both here and inside MemberCheckin.
-function RequireGym({ children }: { children: React.ReactNode }) {
-  const { data, isLoading } = useQuery({
-    queryKey: ['my-memberships'],
-    queryFn: membershipApi.myStatus,
-    staleTime: 1000 * 30,
-  });
 
-  // While loading, don't redirect — show nothing (checkin page handles its own skeleton)
-  if (isLoading) return null;
-
-  const hasApprovedGym = (data?.memberships ?? []).some(
-    (m: any) => m.status === 'approved'
-  );
-
-  // No gym → let MemberCheckin render its own onboarding UI (don't hard redirect)
-  // This allows the page to explain WHY it's locked and give a CTA
-  return <>{children}</>;
-}
 
 function RoleRedirect() {
   const user = useUser();

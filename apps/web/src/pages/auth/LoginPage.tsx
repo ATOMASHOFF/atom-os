@@ -9,7 +9,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isLoading } = useAuthStore();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
 
@@ -18,7 +18,7 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await login(email, password);
+      await login(identifier, password);
       toast.success('Welcome back!');
       // Role redirect handled by RoleRedirect component
       navigate(from || '/');
@@ -78,13 +78,13 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <label className="label">Email</label>
+              <label className="label">Email or Phone</label>
               <input
-                type="email"
+                type="text"
                 className="input"
-                placeholder="you@example.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com or +919876543210"
+                value={identifier}
+                onChange={e => setIdentifier(e.target.value)}
                 required
               />
             </div>

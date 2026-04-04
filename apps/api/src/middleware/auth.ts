@@ -61,11 +61,15 @@ export async function authMiddleware(
     // For gym_admin: get their gym_id from the gyms table
     let gym_id: string | undefined;
     if (profile.role === 'gym_admin') {
-      const { data: gym } = await supabaseAdmin
+      const { data: gym, error: gymError } = await supabaseAdmin
         .from('gyms')
         .select('id')
         .eq('owner_id', user.id)
-        .single();
+        .maybeSingle(); // maybeSingle returns null (not error) when 0 rows found
+      if (gymError) {
+        // Log but don't block auth — gym_id will be undefined, requireGymContext handles it
+        console.warn('[AUTH] gym lookup failed for gym_admin:', gymError.message);
+      }
       gym_id = gym?.id;
     }
 

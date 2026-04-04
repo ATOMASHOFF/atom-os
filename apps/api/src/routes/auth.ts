@@ -13,15 +13,20 @@ const router = Router();
 // Public. Creates Supabase auth user. Trigger auto-creates public.users row.
 router.post('/signup', validate(SignupSchema), async (req, res) => {
   try {
-    const { email, password, full_name } = req.body;
+    const { email, phone, password, full_name } = req.body;
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
+    // Create user with either email or phone
+    const authParams: any = {
       password,
       options: {
-        data: { full_name }, // stored in auth.users.raw_user_meta_data
+        data: { full_name, phone },
       },
-    });
+    };
+
+    if (email) authParams.email = email;
+    if (phone) authParams.phone = phone;
+
+    const { data, error } = await supabase.auth.signUp(authParams);
 
     if (error) {
       if (error.message.includes('already registered')) {
@@ -51,9 +56,19 @@ router.post('/signup', validate(SignupSchema), async (req, res) => {
 // POST /api/auth/login
 router.post('/login', validate(LoginSchema), async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    // Detect if identifier is email or phone
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+
+    const authParams: any = { password };
+    if (isEmail) {
+      authParams.email = identifier;
+    } else {
+      authParams.phone = identifier;
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword(authParams);
 
     if (error || !data.user || !data.session) {
       return unauthorized(res, 'Invalid email or password');

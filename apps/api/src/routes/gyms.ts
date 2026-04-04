@@ -5,7 +5,7 @@ import { Router } from 'express';
 import { supabaseAdmin } from '../utils/supabase';
 import { ok, created, badRequest, notFound, serverError, conflict } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
-import { requireRole, validate } from '../middleware/roles';
+import { requireRole, requireGymContext, validate } from '../middleware/roles';
 import {
   CreateGymSchema,
   UpdateGymSchema,
@@ -16,7 +16,23 @@ import {
 
 const router = Router();
 
-// All gym routes require super_admin
+// GET /api/gyms/my — gym_admin reads their own gym (before super_admin lock)
+router.get('/my', authMiddleware, requireRole('gym_admin'), requireGymContext, async (req, res) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('gyms')
+      .select('*')
+      .eq('id', req.user.gym_id!)
+      .single();
+
+    if (error || !data) return notFound(res, 'Gym not found');
+    return ok(res, { gym: data });
+  } catch (err) {
+    return serverError(res, 'Gym fetch error', err);
+  }
+});
+
+// All remaining gym routes require super_admin
 router.use(authMiddleware, requireRole('super_admin'));
 
 // GET /api/gyms — list all gyms with stats
@@ -142,17 +158,33 @@ router.post('/:id/assign-admin', validate(AssignAdminSchema), async (req, res) =
 
     if (userError || !targetUser) return notFound(res, 'User not found');
 
-    // Update user role to gym_admin
-    await supabaseAdmin
+    // Bug 2 fix: Guard against assigning the same user to multiple gyms
+    // Check if this user is already the owner of a different gym
+    const { data: existingGym } = await supabaseAdmin
+      .from('gyms')
+      .select('id, name')
+      .eq('owner_id', user_id)
+      .neq('id', gym_id) // allow re-assigning to the same gym (idempotent)
+      .maybeSingle();
+
+    if (existingGym) {
+      return conflict(res, `This user is already the admin of "${existingGym.name}". Remove them from that gym first.`);
+    }
+
+    // Bug 6 fix: Check errors on both DB writes
+    const { error: roleError } = await supabaseAdmin
       .from('users')
       .update({ role: 'gym_admin', updated_at: new Date().toISOString() })
       .eq('id', user_id);
 
-    // Set gym owner
-    await supabaseAdmin
+    if (roleError) return serverError(res, 'Failed to update user role', roleError);
+
+    const { error: gymError } = await supabaseAdmin
       .from('gyms')
       .update({ owner_id: user_id, updated_at: new Date().toISOString() })
       .eq('id', gym_id);
+
+    if (gymError) return serverError(res, 'Failed to assign gym owner', gymError);
 
     return ok(res, {
       message: `${targetUser.email} is now the admin of this gym`,

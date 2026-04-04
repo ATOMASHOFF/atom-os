@@ -13,7 +13,7 @@ export default function AdminSettings() {
 
   const { data: gymData, isLoading } = useQuery({
     queryKey: ['my-gym'],
-    queryFn: () => user?.gym_id ? gymApi.get(user.gym_id) : Promise.reject('No gym'),
+    queryFn: gymApi.my,    // gym_admin-accessible endpoint (GET /api/gyms/my)
     enabled: !!user?.gym_id,
   });
 

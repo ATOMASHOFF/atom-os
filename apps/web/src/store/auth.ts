@@ -19,8 +19,8 @@ interface AuthState {
   isInitialized: boolean;
 
   // Actions
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, full_name: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
+  signup: (data: { email?: string; phone?: string; password: string; full_name: string }) => Promise<void>;
   logout: () => Promise<void>;
   fetchMe: () => Promise<void>;
   setUser: (user: AuthUser | null) => void;
@@ -33,10 +33,10 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       isInitialized: false,
 
-      login: async (email, password) => {
+      login: async (identifier, password) => {
         set({ isLoading: true });
         try {
-          const data = await authApi.login({ email, password });
+          const data = await authApi.login({ identifier, password });
           setToken(data.access_token);
           setRefreshToken(data.refresh_token);
           set({ user: data.user, isLoading: false });
@@ -46,10 +46,10 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      signup: async (email, password, full_name) => {
+      signup: async (data) => {
         set({ isLoading: true });
         try {
-          await authApi.signup({ email, password, full_name });
+          await authApi.signup(data);
           set({ isLoading: false });
         } catch (err) {
           set({ isLoading: false });
@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
-        try { await authApi.logout(); } catch {}
+        try { await authApi.logout(); } catch { }
         clearToken();
         set({ user: null });
         window.location.href = '/login';

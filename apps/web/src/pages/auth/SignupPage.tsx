@@ -8,7 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
 export default function SignupPage() {
   const navigate = useNavigate();
   const { signup, isLoading } = useAuthStore();
-  const [form, setForm] = useState({ email: '', password: '', full_name: '' });
+  const [form, setForm] = useState({ email: '', phone: '', password: '', full_name: '' });
   const [showPw, setShowPw] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -18,7 +18,7 @@ export default function SignupPage() {
       return;
     }
     try {
-      await signup(form.email, form.password, form.full_name);
+      await signup({ email: form.email || undefined, phone: form.phone, password: form.password, full_name: form.full_name });
       // Clear the welcome-seen flag so the onboarding modal shows on first login
       localStorage.removeItem('atom-welcome-seen');
       toast.success('Account created! Sign in to get started.');
@@ -64,14 +64,25 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label className="label">Email</label>
+            <label className="label">Phone Number *</label>
+            <input
+              type="tel"
+              className="input"
+              placeholder="+91 9876543210"
+              value={form.phone}
+              onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="label">Email (Optional)</label>
             <input
               type="email"
               className="input"
               placeholder="you@example.com"
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              required
             />
           </div>
 

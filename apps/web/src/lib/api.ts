@@ -91,9 +91,9 @@ export const api = {
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 export const authApi = {
-  signup: (body: { email: string; password: string; full_name: string }) =>
+  signup: (body: { email?: string; phone?: string; password: string; full_name: string }) =>
     api.post<{ message: string; session: { access_token: string; refresh_token: string } | null }>('/api/auth/signup', body),
-  login: (body: { email: string; password: string }) =>
+  login: (body: { identifier: string; password: string }) =>
     api.post<{ user: any; access_token: string; refresh_token: string }>('/api/auth/login', body),
   me: () => api.get<any>('/api/auth/me'),
   updateProfile: (body: any) => api.patch<any>('/api/auth/me', body),
@@ -116,6 +116,7 @@ export const adminApi = {
 export const gymApi = {
   list: () => api.get<any>('/api/gyms'),
   get: (id: string) => api.get<any>(`/api/gyms/${id}`),
+  my: () => api.get<any>('/api/gyms/my'),          // gym_admin: fetch own gym
   create: (body: any) => api.post<any>('/api/gyms', body),
   update: (id: string, body: any) => api.patch<any>(`/api/gyms/${id}`, body),
   setStatus: (id: string, status: string) => api.patch<any>(`/api/gyms/${id}/status`, { status }),
