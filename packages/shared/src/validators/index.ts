@@ -13,7 +13,12 @@ export const SignupSchema = z.object({
 });
 
 export const LoginSchema = z.object({
-  identifier: z.string().min(1, 'Email or phone is required'),
+  identifier: z.string().min(1, 'Email or phone is required').refine(val => {
+    // Allow valid email OR valid phone number
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    const isPhone = /^\+?[1-9]\d{1,14}$/.test(val);
+    return isEmail || isPhone;
+  }, 'Enter a valid email address or phone number'),
   password: z.string().min(1, 'Password is required'),
 });
 
