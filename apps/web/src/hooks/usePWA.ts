@@ -10,9 +10,22 @@ export function useServiceWorker() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
+    let registration: ServiceWorkerRegistration | null = null;
+
+    const checkForUpdates = () => {
+      if (registration) {
+        registration.update().catch(err =>
+          console.warn('[PWA] Update check failed:', err)
+        );
+      }
+    };
+
     navigator.serviceWorker
-      .register('/sw.js')
+      .register('/sw.js', {
+        updateViaCache: 'none'
+      })
       .then(reg => {
+        registration = reg;
         console.log('[PWA] Service worker registered:', reg.scope);
 
         // Detect when a new SW is waiting to activate
@@ -25,6 +38,23 @@ export function useServiceWorker() {
             }
           });
         });
+
+        // Check for updates every 15 minutes
+        const intervalId = setInterval(checkForUpdates, 15 * 60 * 1000);
+
+        // Check for updates when tab becomes visible
+        const handleVisibility = () => {
+          if (document.visibilityState === 'visible') {
+            checkForUpdates();
+          }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+          clearInterval(intervalId);
+          document.removeEventListener('visibilitychange', handleVisibility);
+        };
       })
       .catch(err => console.warn('[PWA] SW registration failed:', err));
   }, []);
@@ -46,8 +76,8 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function useInstallPrompt() {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled]   = useState(false);
-  const [isDismissed, setIsDismissed]   = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     // Check if already running as installed PWA
@@ -96,12 +126,12 @@ export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
-    const onOnline  = () => setIsOnline(true);
+    const onOnline = () => setIsOnline(true);
     const onOffline = () => setIsOnline(false);
-    window.addEventListener('online',  onOnline);
+    window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
     return () => {
-      window.removeEventListener('online',  onOnline);
+      window.removeEventListener('online', onOnline);
       window.removeEventListener('offline', onOffline);
     };
   }, []);

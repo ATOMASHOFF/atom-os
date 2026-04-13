@@ -423,6 +423,11 @@ CREATE POLICY "users: super admin update any"
   ON public.users FOR UPDATE
   USING (public.is_super_admin());
 
+-- Super Admin can delete any user
+CREATE POLICY "users: super admin delete any"
+  ON public.users FOR DELETE
+  USING (public.is_super_admin());
+
 -- Row insert handled by trigger on auth.users (see Trigger section)
 -- Direct inserts only via service role
 CREATE POLICY "users: insert own row"
@@ -471,6 +476,11 @@ CREATE POLICY "gyms: owner updates own gym"
 -- Super Admin can update anything (status, plan, etc.)
 CREATE POLICY "gyms: super admin updates any"
   ON public.gyms FOR UPDATE
+  USING (public.is_super_admin());
+
+-- Super Admin can delete any gym
+CREATE POLICY "gyms: super admin delete any"
+  ON public.gyms FOR DELETE
   USING (public.is_super_admin());
 
 

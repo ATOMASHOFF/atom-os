@@ -1,7 +1,4 @@
 // apps/api/src/middleware/auth.ts
-// Validates Supabase JWT on every protected route.
-// Attaches req.user = { id, email, role, gym_id } for downstream use.
-
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../utils/supabase';
 import { unauthorized, serverError } from '../utils/response';
@@ -15,20 +12,13 @@ export interface AuthUser {
   gym_id?: string;
 }
 
-// Extend Express Request to carry our user
 declare global {
   namespace Express {
-    interface Request {
-      user: AuthUser;
-    }
+    interface Request { user: AuthUser; }
   }
 }
 
-export async function authMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
@@ -38,7 +28,7 @@ export async function authMiddleware(
 
     const token = authHeader.split(' ')[1];
 
-    // Verify JWT with Supabase
+    // ✅ PROPER JWT VALIDATION: verifies signature, expiry and revocation status
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
 
     if (error || !user) {
@@ -46,7 +36,6 @@ export async function authMiddleware(
       return;
     }
 
-    // Fetch full profile from public.users (includes role and gym context)
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('users')
       .select('id, email, role, full_name')
@@ -54,23 +43,31 @@ export async function authMiddleware(
       .single();
 
     if (profileError || !profile) {
+      console.error('[AUTH] Profile not found for user:', user.id, profileError?.message);
       unauthorized(res, 'User profile not found');
       return;
     }
 
-    // For gym_admin: get their gym_id from the gyms table
     let gym_id: string | undefined;
+
     if (profile.role === 'gym_admin') {
+      // Try owner_id match first
       const { data: gym, error: gymError } = await supabaseAdmin
         .from('gyms')
         .select('id')
         .eq('owner_id', user.id)
-        .maybeSingle(); // maybeSingle returns null (not error) when 0 rows found
+        .maybeSingle();
+
       if (gymError) {
-        // Log but don't block auth — gym_id will be undefined, requireGymContext handles it
-        console.warn('[AUTH] gym lookup failed for gym_admin:', gymError.message);
+        console.warn('[AUTH] gym lookup error for gym_admin:', gymError.message);
       }
+
       gym_id = gym?.id;
+
+      if (!gym_id) {
+        console.warn('[AUTH] gym_admin has no gym assigned. user_id:', user.id);
+        // Don't block — requireGymContext will handle this gracefully
+      }
     }
 
     req.user = {

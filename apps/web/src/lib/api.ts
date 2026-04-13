@@ -1,36 +1,29 @@
 // apps/web/src/lib/api.ts
 // Typed API client. Uses stored JWT for every request.
-// All API calls go through this — never direct fetch() in components.
 /// <reference types="vite/client" />
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
-
-function getToken(): string | null {
-  return localStorage.getItem('atom_token');
+// Auto-detect API host for local network access
+let API_BASE = import.meta.env.VITE_API_URL;
+if (!API_BASE) {
+  const currentHost = window.location.hostname;
+  // When accessing from another device on local network, use same host for API
+  API_BASE = currentHost === 'localhost'
+    ? 'http://localhost:4000'
+    : `http://${currentHost}:4000`;
 }
+const API_URL = API_BASE.replace(/\/+$/, '');
 
-export function setToken(token: string): void {
-  localStorage.setItem('atom_token', token);
-}
+function getToken(): string | null { return localStorage.getItem('atom_token'); }
+export function setToken(token: string): void { localStorage.setItem('atom_token', token); }
+export function clearToken(): void { localStorage.removeItem('atom_token'); localStorage.removeItem('atom_refresh'); }
+export function setRefreshToken(token: string): void { localStorage.setItem('atom_refresh', token); }
+export function getRefreshToken(): string | null { return localStorage.getItem('atom_refresh'); }
 
-export function clearToken(): void {
-  localStorage.removeItem('atom_token');
-  localStorage.removeItem('atom_refresh');
-}
+// Mutex to prevent multiple concurrent refresh token requests (fixes "too many auth attempts" error)
+let isRefreshing = false;
+let refreshPromise: Promise<any> | null = null;
 
-export function setRefreshToken(token: string): void {
-  localStorage.setItem('atom_refresh', token);
-}
-
-export function getRefreshToken(): string | null {
-  return localStorage.getItem('atom_refresh');
-}
-
-// Core fetch wrapper
-async function request<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -38,28 +31,70 @@ async function request<T>(
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  let res;
+  try {
+    res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  } catch (networkErr: any) {
+    // Network failure: connection refused, offline, CORS, DNS error
+    throw new ApiError(
+      `Connection failed: ${networkErr.message || 'Could not reach server'}`,
+      0,
+      'NETWORK_ERROR'
+    );
+  }
 
-  // Auto-refresh on 401
   if (res.status === 401) {
     const refreshToken = getRefreshToken();
-    if (refreshToken) {
-      const refreshed = await fetch(`${API_URL}/api/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-      });
-      if (refreshed.ok) {
-        const data = await refreshed.json();
-        setToken(data.data.access_token);
-        setRefreshToken(data.data.refresh_token);
-        // Retry original request
-        return request<T>(path, options);
-      }
+
+    if (!refreshToken) {
+      clearToken();
+      window.location.href = '/login';
+      throw new ApiError('Session expired', 401, 'SESSION_EXPIRED');
     }
+
+    // If already refreshing, wait for it to complete then retry
+    if (isRefreshing) {
+      await refreshPromise;
+      return request<T>(path, options);
+    }
+
+    // Start new refresh process
+    isRefreshing = true;
+
+    refreshPromise = (async () => {
+      try {
+        const refreshed = await fetch(`${API_URL}/api/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        });
+
+        if (refreshed.ok) {
+          const data = await refreshed.json();
+          setToken(data.data.access_token);
+          setRefreshToken(data.data.refresh_token);
+          return true;
+        }
+        return false;
+      } catch {
+        return false;
+      } finally {
+        isRefreshing = false;
+        refreshPromise = null;
+      }
+    })();
+
+    const refreshSuccess = await refreshPromise;
+
+    if (refreshSuccess) {
+      // Retry original request with new token
+      return request<T>(path, options);
+    }
+
+    // Refresh failed - logout
     clearToken();
     window.location.href = '/login';
-    throw new Error('Session expired');
+    throw new ApiError('Session expired', 401, 'SESSION_EXPIRED');
   }
 
   const json = await res.json();
@@ -68,33 +103,25 @@ async function request<T>(
 }
 
 export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public code?: string
-  ) {
+  constructor(message: string, public status: number, public code?: string) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
-// HTTP method helpers
 export const api = {
   get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
-  patch: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
-  delete: <T>(path: string) =>
-    request<T>(path, { method: 'DELETE' }),
+  post: <T>(path: string, body?: unknown) => request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 export const authApi = {
   signup: (body: { email?: string; phone?: string; password: string; full_name: string }) =>
-    api.post<{ message: string; session: { access_token: string; refresh_token: string } | null }>('/api/auth/signup', body),
+    api.post<any>('/api/auth/signup', body),
   login: (body: { identifier: string; password: string }) =>
-    api.post<{ user: any; access_token: string; refresh_token: string }>('/api/auth/login', body),
+    api.post<any>('/api/auth/login', body),
   me: () => api.get<any>('/api/auth/me'),
   updateProfile: (body: any) => api.patch<any>('/api/auth/me', body),
   logout: () => api.post('/api/auth/logout'),
@@ -108,20 +135,37 @@ export const adminApi = {
     const q = new URLSearchParams(params as any).toString();
     return api.get<any>(`/api/admin/users${q ? `?${q}` : ''}`);
   },
-  updateUserRole: (id: string, role: string) =>
-    api.patch<any>(`/api/admin/users/${id}/role`, { role }),
+  members: (params?: { page?: number; limit?: number; gym_id?: string; status?: string; search?: string } | string) => {
+    let normalizedParams: Record<string, any> = {};
+
+    // Handle backwards compatibility: accept string status directly as parameter
+    if (typeof params === 'string') {
+      normalizedParams = { status: params };
+    } else {
+      normalizedParams = params ?? {};
+    }
+
+    const filteredParams = Object.entries(normalizedParams)
+      .filter(([, v]) => v !== undefined && v !== '')
+      .map(([k, v]) => [k, String(v)]);
+
+    const q = new URLSearchParams(filteredParams).toString();
+    return api.get<{ members: any[]; total: number }>(`/api/admin/members${q ? `?${q}` : ''}`);
+  },
+  updateUserRole: (id: string, role: string) => api.patch<any>(`/api/admin/users/${id}/role`, { role }),
+  deleteUser: (id: string) => api.delete<any>(`/api/admin/users/${id}`),
+  deleteGym: (id: string) => api.delete<any>(`/api/admin/gyms/${id}`),
 };
 
 // ─── GYMS ─────────────────────────────────────────────────────────────────────
 export const gymApi = {
   list: () => api.get<any>('/api/gyms'),
   get: (id: string) => api.get<any>(`/api/gyms/${id}`),
-  my: () => api.get<any>('/api/gyms/my'),          // gym_admin: fetch own gym
+  my: () => api.get<any>('/api/gyms/my'),
   create: (body: any) => api.post<any>('/api/gyms', body),
   update: (id: string, body: any) => api.patch<any>(`/api/gyms/${id}`, body),
   setStatus: (id: string, status: string) => api.patch<any>(`/api/gyms/${id}/status`, { status }),
-  assignAdmin: (id: string, user_id: string) =>
-    api.post<any>(`/api/gyms/${id}/assign-admin`, { user_id }),
+  assignAdmin: (id: string, user_id: string) => api.post<any>(`/api/gyms/${id}/assign-admin`, { user_id }),
 };
 
 // ─── MEMBERSHIP ───────────────────────────────────────────────────────────────
@@ -131,12 +175,36 @@ export const membershipApi = {
   myStatus: () => api.get<any>('/api/membership/status'),
   requests: () => api.get<any>('/api/membership/requests'),
   updateRequest: (id: string, body: any) => api.patch<any>(`/api/membership/requests/${id}`, body),
-  members: (status?: string) => {
-    const q = status ? `?status=${status}` : '';
-    return api.get<any>(`/api/membership/members${q}`);
+  members: (params?: { page?: number; limit?: number; gym_id?: string; status?: string; search?: string } | string) => {
+    let normalizedParams: Record<string, any> = {};
+
+    // Handle backwards compatibility: accept string status directly as parameter
+    if (typeof params === 'string') {
+      normalizedParams = { status: params };
+    } else {
+      normalizedParams = params ?? {};
+    }
+
+    // Only append status param if it's a real filter (not 'all' or undefined)
+    const filteredParams = Object.entries(normalizedParams)
+      .filter(([, v]) => v !== undefined && v !== '')
+      .map(([k, v]) => [k, String(v)]);
+
+    const q = new URLSearchParams(filteredParams).toString();
+    return api.get<{ members: any[]; total: number }>(`/api/admin/members${q ? `?${q}` : ''}`);
   },
+
   updateMember: (id: string, body: any) => api.patch<any>(`/api/membership/members/${id}`, body),
   stats: () => api.get<any>('/api/membership/stats'),
+  adminAddMember: (body: {
+    full_name: string;
+    email?: string;
+    phone?: string;
+    subscription_plan?: string;
+    subscription_start?: string;
+    amount_paid?: number;
+    notes?: string;
+  }) => api.post<any>('/api/membership/admin-add', body),
 };
 
 // ─── QR ───────────────────────────────────────────────────────────────────────
@@ -182,9 +250,16 @@ export const workoutApi = {
   update: (id: string, body: any) => api.patch<any>(`/api/workouts/${id}`, body),
   delete: (id: string) => api.delete<any>(`/api/workouts/${id}`),
   addSet: (logId: string, body: any) => api.post<any>(`/api/workouts/${logId}/sets`, body),
-  deleteSet: (logId: string, setId: string) =>
-    api.delete<any>(`/api/workouts/${logId}/sets/${setId}`),
+  deleteSet: (logId: string, setId: string) => api.delete<any>(`/api/workouts/${logId}/sets/${setId}`),
   exercises: () => api.get<any>('/api/workouts/exercises'),
   createExercise: (body: any) => api.post<any>('/api/workouts/exercises', body),
   stats: () => api.get<any>('/api/workouts/stats/summary'),
+};
+
+// ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────
+export const announcementsApi = {
+  list: () => api.get<any>('/api/announcements'),
+  create: (body: any) => api.post<any>('/api/announcements', body),
+  update: (id: string, body: any) => api.patch<any>(`/api/announcements/${id}`, body),
+  delete: (id: string) => api.delete<any>(`/api/announcements/${id}`),
 };

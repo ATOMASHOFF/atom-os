@@ -6,7 +6,8 @@ import { Eye, EyeOff } from 'lucide-react';
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { signup, isLoading } = useAuthStore();
+  const signup    = useAuthStore((s) => s.signup);
+  const isLoading = useAuthStore((s) => s.isLoading);
   const [form, setForm] = useState({ email: '', phone: '', password: '', full_name: '' });
   const [showPw, setShowPw] = useState(false);
 

@@ -8,7 +8,8 @@ import { Eye, EyeOff, Zap } from 'lucide-react';
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading } = useAuthStore();
+  const login     = useAuthStore((s) => s.login);
+  const isLoading  = useAuthStore((s) => s.isLoading);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);

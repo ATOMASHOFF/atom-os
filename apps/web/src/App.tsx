@@ -1,37 +1,36 @@
 // apps/web/src/App.tsx
+// Changes from previous version:
+//   1. Added SuperMembers import and route
+//   2. AdminAnnouncements import and route already there
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore, useUser } from '@/store/auth';
 
-
-// Pages
-import LoginPage from '@/pages/auth/LoginPage';
+import LoginPage  from '@/pages/auth/LoginPage';
 import SignupPage from '@/pages/auth/SignupPage';
 
-// Super Admin
 import SuperDashboard from '@/pages/super/SuperDashboard';
-import SuperGyms from '@/pages/super/SuperGyms';
-import SuperUsers from '@/pages/super/SuperUsers';
+import SuperGyms      from '@/pages/super/SuperGyms';
+import SuperUsers     from '@/pages/super/SuperUsers';
+import SuperMembers   from '@/pages/super/SuperMembers';   // ← NEW
 
-// Gym Admin
-import AdminDashboard from '@/pages/admin/AdminDashboard';
-import AdminMembers from '@/pages/admin/AdminMembers';
-import AdminAttendance from '@/pages/admin/AdminAttendance';
-import AdminQRScreen from '@/pages/admin/AdminQRScreen';
-import AdminSettings from '@/pages/admin/AdminSettings';
-import AdminAnalytics from '@/pages/admin/AdminAnalytics';
+import AdminDashboard     from '@/pages/admin/AdminDashboard';
+import AdminMembers       from '@/pages/admin/AdminMembers';
+import AdminAttendance    from '@/pages/admin/AdminAttendance';
+import AdminQRScreen      from '@/pages/admin/AdminQRScreen';
+import AdminSettings      from '@/pages/admin/AdminSettings';
+import AdminAnalytics     from '@/pages/admin/AdminAnalytics';
+import AdminAnnouncements from '@/pages/admin/AdminAnnouncements';
 
-// Member
 import MemberDashboard from '@/pages/member/MemberDashboard';
-import MemberWorkouts from '@/pages/member/MemberWorkouts';
-import MemberCheckin from '@/pages/member/MemberCheckin';
-import MemberProfile from '@/pages/member/MemberProfile';
-import MemberProgress from '@/pages/member/MemberProgress';
-import MemberAIPlan from '@/pages/member/MemberAIPlan';
+import MemberWorkouts  from '@/pages/member/MemberWorkouts';
+import MemberCheckin   from '@/pages/member/MemberCheckin';
+import MemberProfile   from '@/pages/member/MemberProfile';
+import MemberProgress  from '@/pages/member/MemberProgress';
+import MemberAIPlan    from '@/pages/member/MemberAIPlan';
 
-// Layout
 import AppLayout from '@/components/layout/AppLayout';
 import { InstallBanner, UpdateBanner, OfflineBanner } from '@/components/ui/PWABanner';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -39,49 +38,41 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 30,       // 30s stale time
-      retry: 1,
-      refetchOnWindowFocus: false,
+      staleTime:            10_000,
+      retry:                2,
+      refetchOnWindowFocus: true,
+      refetchOnMount:       true,
+      refetchOnReconnect:   true,
     },
   },
 });
 
-// ─── ROUTE GUARDS ────────────────────────────────────────────────────────────
-
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const user = useUser();
+  const user     = useUser();
   const location = useLocation();
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   return <>{children}</>;
 }
 
 function RequireRole({ role, children }: { role: string | string[]; children: React.ReactNode }) {
-  const user = useUser();
+  const user  = useUser();
   const roles = Array.isArray(role) ? role : [role];
-  if (!user || !roles.includes(user.role)) {
-    return <Navigate to="/unauthorized" replace />;
-  }
+  if (!user || !roles.includes(user.role)) return <Navigate to="/unauthorized" replace />;
   return <>{children}</>;
 }
-
-
 
 function RoleRedirect() {
   const user = useUser();
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'super_admin') return <Navigate to="/super/dashboard" replace />;
-  if (user.role === 'gym_admin') return <Navigate to="/admin/dashboard" replace />;
+  if (user.role === 'gym_admin')   return <Navigate to="/admin/dashboard" replace />;
   return <Navigate to="/member/dashboard" replace />;
 }
 
-// ─── APP INIT ─────────────────────────────────────────────────────────────────
-
 function AppInit() {
-  const { fetchMe, isInitialized } = useAuthStore();
-
-  useEffect(() => {
-    fetchMe();
-  }, []);
+  const fetchMe       = useAuthStore((s) => s.fetchMe);
+  const isInitialized = useAuthStore((s) => s.isInitialized);
+  useEffect(() => { fetchMe(); }, []);
 
   if (!isInitialized) {
     return (
@@ -100,54 +91,48 @@ function AppInit() {
     <ErrorBoundary>
       <BrowserRouter>
         <Routes>
-          {/* Public */}
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login"  element={<LoginPage  />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/" element={<RoleRedirect />} />
+          <Route path="/"       element={<RoleRedirect />} />
 
           {/* Super Admin */}
           <Route path="/super" element={
-            <RequireAuth><RequireRole role="super_admin">
-              <AppLayout role="super_admin" />
-            </RequireRole></RequireAuth>
+            <RequireAuth><RequireRole role="super_admin"><AppLayout role="super_admin" /></RequireRole></RequireAuth>
           }>
             <Route path="dashboard" element={<SuperDashboard />} />
-            <Route path="gyms" element={<SuperGyms />} />
-            <Route path="users" element={<SuperUsers />} />
+            <Route path="gyms"      element={<SuperGyms      />} />
+            <Route path="users"     element={<SuperUsers     />} />
+            <Route path="members"   element={<SuperMembers   />} />  {/* ← NEW */}
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
 
           {/* Gym Admin */}
           <Route path="/admin" element={
-            <RequireAuth><RequireRole role="gym_admin">
-              <AppLayout role="gym_admin" />
-            </RequireRole></RequireAuth>
+            <RequireAuth><RequireRole role="gym_admin"><AppLayout role="gym_admin" /></RequireRole></RequireAuth>
           }>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="members" element={<AdminMembers />} />
-            <Route path="attendance" element={<AdminAttendance />} />
-            <Route path="qr" element={<AdminQRScreen />} />
-            <Route path="settings" element={<AdminSettings />} />
-            <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="dashboard"     element={<AdminDashboard     />} />
+            <Route path="members"       element={<AdminMembers       />} />
+            <Route path="attendance"    element={<AdminAttendance    />} />
+            <Route path="qr"            element={<AdminQRScreen      />} />
+            <Route path="settings"      element={<AdminSettings      />} />
+            <Route path="analytics"     element={<AdminAnalytics     />} />
+            <Route path="announcements" element={<AdminAnnouncements />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
 
           {/* Member */}
           <Route path="/member" element={
-            <RequireAuth><RequireRole role="member">
-              <AppLayout role="member" />
-            </RequireRole></RequireAuth>
+            <RequireAuth><RequireRole role="member"><AppLayout role="member" /></RequireRole></RequireAuth>
           }>
             <Route path="dashboard" element={<MemberDashboard />} />
-            <Route path="workouts" element={<MemberWorkouts />} />
-            <Route path="progress" element={<MemberProgress />} />
-            <Route path="ai-plan" element={<MemberAIPlan />} />
-            <Route path="checkin" element={<MemberCheckin />} />
-            <Route path="profile" element={<MemberProfile />} />
+            <Route path="workouts"  element={<MemberWorkouts  />} />
+            <Route path="progress"  element={<MemberProgress  />} />
+            <Route path="ai-plan"   element={<MemberAIPlan    />} />
+            <Route path="checkin"   element={<MemberCheckin   />} />
+            <Route path="profile"   element={<MemberProfile   />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
 
-          {/* Fallbacks */}
           <Route path="/unauthorized" element={
             <div className="min-h-screen bg-atom-bg flex items-center justify-center">
               <div className="text-center">
@@ -173,14 +158,9 @@ export default function App() {
       <Toaster
         position="top-right"
         toastOptions={{
-          style: {
-            background: '#161616',
-            color: '#F0F0F0',
-            border: '1px solid #2A2A2A',
-            fontFamily: 'DM Sans, sans-serif',
-          },
+          style: { background: '#161616', color: '#F0F0F0', border: '1px solid #2A2A2A', fontFamily: 'DM Sans, sans-serif' },
           success: { iconTheme: { primary: '#EF4444', secondary: '#0D0D0D' } },
-          error: { iconTheme: { primary: '#EF4444', secondary: '#0D0D0D' } },
+          error:   { iconTheme: { primary: '#EF4444', secondary: '#0D0D0D' } },
         }}
       />
     </QueryClientProvider>

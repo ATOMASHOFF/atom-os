@@ -155,4 +155,14 @@ export const GeneratePlanSchema = z.object({
   notes: z.string().max(500).optional(),
 });
 
+// ─── AI EXERCISE GENERATION ─────────────────────────────────────────────────────
+
+export const GenerateExerciseSchema = z.object({
+  muscle_group: z.enum(['chest', 'back', 'shoulders', 'arms', 'legs', 'core', 'cardio', 'full_body', 'other']),
+  equipment: z.enum(['barbell', 'dumbbell', 'machine', 'cable', 'bodyweight', 'kettlebell', 'resistance_band', 'other']),
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
+  focus: z.string().max(100).optional(),
+});
+
 export type GeneratePlanInput = z.infer<typeof GeneratePlanSchema>;
+export type GenerateExerciseInput = z.infer<typeof GenerateExerciseSchema>;

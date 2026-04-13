@@ -97,7 +97,7 @@ router.post('/login', validate(LoginSchema), async (req, res) => {
         .from('gyms')
         .select('id, name, gym_code')
         .eq('owner_id', data.user.id)
-        .single();
+        .maybeSingle();
       gym_id = gym?.id ?? null;
     }
 

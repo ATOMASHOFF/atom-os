@@ -2,26 +2,28 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/atom-icon-192.png" />
     <link rel="icon" type="image/svg+xml" href="/atom-icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Atom OS</title>
     <meta name="description" content="Atom OS — Gym Management & Fitness Tracking" />
 
-    <!-- iOS PWA -->
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- iOS PWA — MUST have these for "Add to Home Screen" to work on iPhone -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Atom OS" />
     <link rel="apple-touch-icon" href="/atom-icon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/atom-icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/atom-icon-512.png" />
 
     <!-- Android PWA -->
     <meta name="mobile-web-app-capable" content="yes" />
-
-    <!-- Viewport — prevent zoom on input focus on iOS -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-    <!-- PWA -->
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/atom-icon-192.png" />
+    <meta name="theme-color" content="#EF4444" />
+    <meta name="msapplication-TileColor" content="#EF4444" />
+    <meta name="msapplication-TileImage" content="/atom-icon-192.png" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

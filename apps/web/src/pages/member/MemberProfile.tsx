@@ -12,7 +12,8 @@ type Tab = 'profile' | 'fitness' | 'memberships';
 export default function MemberProfile() {
   const qc = useQueryClient();
   const user = useUser();
-  const { logout, setUser } = useAuthStore();
+  const logout  = useAuthStore((s) => s.logout);
+  const setUser = useAuthStore((s) => s.setUser);
 
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [editMode, setEditMode] = useState(false);

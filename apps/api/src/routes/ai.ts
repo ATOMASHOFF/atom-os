@@ -7,8 +7,8 @@ import { supabaseAdmin } from '../utils/supabase';
 import { ok, badRequest, serverError } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
 import { validate } from '../middleware/roles';
-import { GeneratePlanSchema } from '@atom-os/shared';
-import type { WorkoutPlan } from '@atom-os/shared';
+import { GeneratePlanSchema, GenerateExerciseSchema } from '@atom-os/shared';
+import type { WorkoutPlan, Exercise } from '@atom-os/shared';
 
 const router = Router();
 router.use(authMiddleware);
@@ -18,6 +18,97 @@ const anthropic = new Anthropic({
 });
 
 // ─── GENERATE PLAN ──────────────────────────────────────────────────────────
+
+// ─── GENERATE EXERCISE ──────────────────────────────────────────────────────
+
+router.post('/generate-exercise', validate(GenerateExerciseSchema), async (req, res) => {
+    try {
+        const { muscle_group, equipment, difficulty, focus } = req.body;
+
+        // Fetch available exercises from DB to ground the AI
+        const { data: exercises } = await supabaseAdmin
+            .from('exercises')
+            .select('id, name, category, equipment, muscle_groups, instructions')
+            .eq('is_global', true)
+            .order('name');
+
+        const exerciseList = (exercises ?? [])
+            .map(e => `- ${e.name} (${e.category}, ${e.equipment}, muscles: ${(e.muscle_groups ?? []).join(', ')})`)
+            .join('\n');
+
+        const systemPrompt = `You are an expert fitness coach and exercise specialist. You create detailed, safe, and effective exercise descriptions.
+
+IMPORTANT: You MUST respond with ONLY valid JSON. No markdown, no explanation, no text outside the JSON.
+
+The JSON must match this exact structure:
+{
+  "exercise_name": "string — descriptive exercise name",
+  "description": "string — detailed description of how to perform the exercise",
+  "muscle_groups": ["string — array of primary muscle groups worked"],
+  "equipment": "string — equipment needed",
+  "difficulty": "string — beginner, intermediate, or advanced",
+  "instructions": "string — step-by-step instructions",
+  "video_url": "string — optional video URL",
+  "image_url": "string — optional image URL"
+}
+
+Rules:
+- The exercise_name MUST be unique and descriptive
+- Focus on the specified muscle_group and equipment
+- Match the difficulty level
+- Include proper form cues and safety tips
+- Keep instructions clear and concise`;
+
+        const userPrompt = `Generate a new exercise for:
+Muscle group: ${muscle_group}
+Equipment: ${equipment}
+Difficulty: ${difficulty}
+Focus: ${focus}
+
+Available exercises (for reference):
+${exerciseList}
+
+Create a unique exercise that targets the specified muscle group using the given equipment at the specified difficulty level.`;
+
+        const message = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 2048,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: userPrompt }],
+        });
+
+        const textBlock = message.content.find(block => block.type === 'text');
+        if (!textBlock || textBlock.type !== 'text') {
+            return serverError(res, 'No text response from AI');
+        }
+
+        let exercise: Exercise;
+        try {
+            // Extract JSON from potential markdown code blocks
+            let jsonStr = textBlock.text.trim();
+            if (jsonStr.startsWith('```')) {
+                jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+            }
+            exercise = JSON.parse(jsonStr);
+        } catch (parseError) {
+            console.error('[AI] JSON parse error:', textBlock.text);
+            return serverError(res, 'AI returned invalid JSON. Please try again.');
+        }
+
+        // Validate exercise has required structure (AI returns exercise_name, not name)
+        if (!exercise.exercise_name || !exercise.equipment) {
+            return serverError(res, 'AI returned incomplete exercise. Please try again.');
+        }
+
+        return ok(res, { exercise });
+    } catch (err: any) {
+        console.error('[AI] Exercise generation error:', err);
+        if (err?.status === 429) {
+            return badRequest(res, 'AI rate limit reached. Please wait a moment and try again.');
+        }
+        return serverError(res, 'Failed to generate exercise', err);
+    }
+});
 
 router.post('/generate-plan', validate(GeneratePlanSchema), async (req, res) => {
     try {
