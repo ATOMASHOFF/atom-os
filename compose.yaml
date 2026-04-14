@@ -1,0 +1,6 @@
+services:
+  atomos:
+    image: atomos
+    build:
+      context: .
+      dockerfile: ./Dockerfile
