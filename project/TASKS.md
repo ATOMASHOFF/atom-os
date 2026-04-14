@@ -96,7 +96,7 @@
 - [ ] Smoke test: signup → join gym → approve → QR display → scan → checkin ✅
 
 ## 🔮 Phase 2 (future)
-- [ ] Bulk member import (CSV upload)
+
 - [ ] Email/WhatsApp notifications on membership approval
 - [ ] Razorpay payment integration + invoice PDF generation
 - [x] AI workout plan generator (Anthropic Claude API) ← DONE in v1.6.0
