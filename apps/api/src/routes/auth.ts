@@ -1,6 +1,7 @@
 // apps/api/src/routes/auth.ts
 
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { supabase, supabaseAdmin } from '../utils/supabase';
 import { ok, created, badRequest, serverError, unauthorized } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
@@ -9,9 +10,32 @@ import { SignupSchema, LoginSchema, UpdateProfileSchema } from '@atom-os/shared'
 
 const router = Router();
 
+const authAttemptLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many auth attempts. Please wait.', code: 'AUTH_RATE_LIMITED' },
+});
+
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many refresh attempts. Please wait.', code: 'REFRESH_RATE_LIMITED' },
+});
+
+function normalizeRole(role: string | null | undefined): 'super_admin' | 'gym_admin' | 'member' {
+  if (role === 'admin') return 'gym_admin';
+  if (role === 'guest') return 'member';
+  if (role === 'super_admin' || role === 'gym_admin' || role === 'member') return role;
+  return 'member';
+}
+
 // POST /api/auth/signup
 // Public. Creates Supabase auth user. Trigger auto-creates public.users row.
-router.post('/signup', validate(SignupSchema), async (req, res) => {
+router.post('/signup', authAttemptLimiter, validate(SignupSchema), async (req, res) => {
   try {
     const { email, phone, password, full_name } = req.body;
 
@@ -54,28 +78,75 @@ router.post('/signup', validate(SignupSchema), async (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', validate(LoginSchema), async (req, res) => {
+router.post('/login', authAttemptLimiter, validate(LoginSchema), async (req, res) => {
   try {
     const { identifier, password } = req.body;
+    const rawIdentifier = String(identifier ?? '').trim();
 
     // Detect if identifier is email or phone
     // Validate identifier format here with a clear message
-    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-    const isPhone = /^\+?[0-9\s\-().]{7,20}$/.test(identifier);
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawIdentifier);
+    const isPhone = /^\+?[0-9\s\-().]{7,20}$/.test(rawIdentifier);
     if (!isEmail && !isPhone) {
       return badRequest(res, 'Enter a valid email address or phone number');
     }
 
-    const authParams: any = { password };
+    const email = rawIdentifier.toLowerCase();
+    const normalizedPhone = rawIdentifier.replace(/[\s\-().]/g, '');
+
+    // Try primary + fallback sign-in paths so login works consistently
+    // even if users type formatted phone numbers or phone auth is disabled.
+    let sessionData: any = null;
+
     if (isEmail) {
-      authParams.email = identifier;
+      const { data } = await supabase.auth.signInWithPassword({ email, password });
+      sessionData = data;
     } else {
-      authParams.phone = identifier;
+      const phoneCandidates = Array.from(new Set([
+        normalizedPhone,
+        normalizedPhone.startsWith('+') ? normalizedPhone.slice(1) : `+${normalizedPhone}`,
+      ])).filter(Boolean);
+
+      for (const candidate of phoneCandidates) {
+        const { data } = await supabase.auth.signInWithPassword({ phone: candidate, password });
+        if (data?.user && data?.session) {
+          sessionData = data;
+          break;
+        }
+      }
+
+      if (!sessionData?.user || !sessionData?.session) {
+        // Fallback: resolve phone -> email from profile table, then login by email.
+        const phoneMatches = Array.from(new Set([
+          normalizedPhone,
+          normalizedPhone.startsWith('+') ? normalizedPhone.slice(1) : normalizedPhone,
+          normalizedPhone.startsWith('+') ? normalizedPhone : `+${normalizedPhone}`,
+        ]));
+
+        let profileByPhone: { email?: string | null } | null = null;
+        for (const phoneValue of phoneMatches) {
+          const { data } = await supabaseAdmin
+            .from('users')
+            .select('email')
+            .eq('phone', phoneValue)
+            .maybeSingle();
+          if (data?.email) {
+            profileByPhone = data;
+            break;
+          }
+        }
+
+        if (profileByPhone?.email) {
+          const { data } = await supabase.auth.signInWithPassword({
+            email: profileByPhone.email.toLowerCase(),
+            password,
+          });
+          sessionData = data;
+        }
+      }
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword(authParams);
-
-    if (error || !data.user || !data.session) {
+    if (!sessionData?.user || !sessionData?.session) {
       return unauthorized(res, 'Invalid email or password');
     }
 
@@ -83,7 +154,7 @@ router.post('/login', validate(LoginSchema), async (req, res) => {
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('users')
       .select('id, email, role, full_name')
-      .eq('id', data.user.id)
+      .eq('id', sessionData.user.id)
       .single();
 
     if (profileError || !profile) {
@@ -92,20 +163,21 @@ router.post('/login', validate(LoginSchema), async (req, res) => {
 
     // For gym_admin, include their gym_id
     let gym_id: string | null = null;
-    if (profile.role === 'gym_admin') {
+    const userRole = normalizeRole(profile.role as string | null | undefined);
+    if (userRole === 'gym_admin') {
       const { data: gym } = await supabaseAdmin
         .from('gyms')
         .select('id, name, gym_code')
-        .eq('owner_id', data.user.id)
+        .eq('owner_id', sessionData.user.id)
         .maybeSingle();
       gym_id = gym?.id ?? null;
     }
 
     return ok(res, {
       user: { ...profile, gym_id },
-      access_token: data.session.access_token,
-      refresh_token: data.session.refresh_token,
-      expires_at: data.session.expires_at,
+      access_token: sessionData.session.access_token,
+      refresh_token: sessionData.session.refresh_token,
+      expires_at: sessionData.session.expires_at,
     });
   } catch (err) {
     return serverError(res, 'Login error', err);
@@ -113,7 +185,7 @@ router.post('/login', validate(LoginSchema), async (req, res) => {
 });
 
 // POST /api/auth/refresh
-router.post('/refresh', async (req, res) => {
+router.post('/refresh', refreshLimiter, async (req, res) => {
   try {
     const { refresh_token } = req.body;
     if (!refresh_token) return badRequest(res, 'refresh_token is required');

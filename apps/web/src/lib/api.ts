@@ -112,6 +112,7 @@ export class ApiError extends Error {
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body?: unknown) => request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  put: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
   patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
@@ -237,6 +238,41 @@ export const aiApi = {
     focus_areas?: string[];
     notes?: string;
   }) => api.post<any>('/api/ai/generate-plan', body),
+};
+
+// ─── MEMBERSHIP PLANS / SUBSCRIPTIONS ───────────────────────────────────────
+export const plansApi = {
+  list: (params?: { gym_id?: string }) => {
+    const q = new URLSearchParams(params as any).toString();
+    return api.get<any>(`/api/plans${q ? `?${q}` : ''}`);
+  },
+  create: (body: {
+    name: string;
+    duration_days: number;
+    price: number;
+    description?: string;
+    is_active?: boolean;
+  }) => api.post<any>('/api/plans', body),
+  update: (id: string, body: {
+    name?: string;
+    duration_days?: number;
+    price?: number;
+    description?: string;
+    is_active?: boolean;
+  }) => api.put<any>(`/api/plans/${id}`, body),
+  deactivate: (id: string) => api.delete<any>(`/api/plans/${id}`),
+};
+
+export const subscriptionsApi = {
+  assign: (body: {
+    member_id: string;
+    plan_id: string;
+    start_date?: string;
+    payment_status?: 'paid' | 'pending' | 'failed';
+  }) => api.post<any>('/api/subscriptions', body),
+  list: () => api.get<any>('/api/subscriptions'),
+  member: (memberId: string) => api.get<any>(`/api/subscriptions/${memberId}`),
+  me: () => api.get<any>('/api/subscriptions/me'),
 };
 
 // ─── WORKOUTS ─────────────────────────────────────────────────────────────────

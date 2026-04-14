@@ -8,9 +8,19 @@ export function useServiceWorker() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
+    if (!import.meta.env.PROD) return;
     if (!('serviceWorker' in navigator)) return;
 
     let registration: ServiceWorkerRegistration | null = null;
+    let intervalId: number | undefined;
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && registration) {
+        registration.update().catch(err =>
+          console.warn('[PWA] Update check failed:', err)
+        );
+      }
+    };
 
     const checkForUpdates = () => {
       if (registration) {
@@ -40,23 +50,16 @@ export function useServiceWorker() {
         });
 
         // Check for updates every 15 minutes
-        const intervalId = setInterval(checkForUpdates, 15 * 60 * 1000);
-
-        // Check for updates when tab becomes visible
-        const handleVisibility = () => {
-          if (document.visibilityState === 'visible') {
-            checkForUpdates();
-          }
-        };
+        intervalId = window.setInterval(checkForUpdates, 15 * 60 * 1000);
 
         document.addEventListener('visibilitychange', handleVisibility);
-
-        return () => {
-          clearInterval(intervalId);
-          document.removeEventListener('visibilitychange', handleVisibility);
-        };
       })
       .catch(err => console.warn('[PWA] SW registration failed:', err));
+
+    return () => {
+      if (intervalId) window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   function applyUpdate() {

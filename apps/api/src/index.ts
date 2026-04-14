@@ -26,6 +26,8 @@ import workoutsRouter from './routes/workouts';
 import aiRouter from './routes/ai';
 import adminRouter from './routes/admin';
 import announcementsRouter from './routes/announcements';
+import plansRouter from './routes/plans';
+import subscriptionsRouter from './routes/subscriptions';
 
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '4000', 10);
@@ -94,7 +96,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // ─── API ROUTES ───────────────────────────────────────────────────────────────
-app.use('/api/auth', authLimiter, authRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/gyms', gymsRouter);
 app.use('/api/membership', membershipRouter);
 app.use('/api/qr', qrRouter);
@@ -103,6 +105,8 @@ app.use('/api/workouts', workoutsRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/announcements', announcementsRouter);
+app.use('/api/plans', plansRouter);
+app.use('/api/subscriptions', subscriptionsRouter);
 
 // ─── 404 HANDLER ──────────────────────────────────────────────────────────────
 app.use((req, res) => {

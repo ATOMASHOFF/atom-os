@@ -8,7 +8,7 @@ import { useAuthStore, useUser } from '@/store/auth';
 import {
   LayoutDashboard, Users, QrCode, Dumbbell, Activity,
   Building2, LogOut, ChevronRight, User, ScanLine, Settings,
-  Menu, X, TrendingUp, Lock, Sparkles, Megaphone, UsersRound,
+  Menu, X, TrendingUp, Lock, Sparkles, Megaphone, UsersRound, CreditCard,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useQuery } from '@tanstack/react-query';
@@ -27,6 +27,7 @@ const NAV: Record<Role, { to: string; icon: React.ElementType; label: string }[]
   gym_admin: [
     { to: '/admin/dashboard',      icon: LayoutDashboard, label: 'Dashboard'     },
     { to: '/admin/members',        icon: Users,           label: 'Members'       },
+    { to: '/admin/plans',          icon: CreditCard,      label: 'Membership Plans' },
     { to: '/admin/attendance',     icon: Activity,        label: 'Attendance'    },
     { to: '/admin/analytics',      icon: TrendingUp,      label: 'Analytics'     },
     { to: '/admin/qr',             icon: QrCode,          label: 'QR Screen'     },
@@ -38,6 +39,7 @@ const NAV: Record<Role, { to: string; icon: React.ElementType; label: string }[]
     { to: '/member/workouts',  icon: Dumbbell,        label: 'Workouts'  },
     { to: '/member/ai-plan',   icon: Sparkles,        label: 'AI Coach'  },
     { to: '/member/progress',  icon: TrendingUp,      label: 'Progress'  },
+    { to: '/member/membership',icon: CreditCard,      label: 'My Plan'   },
     { to: '/member/checkin',   icon: ScanLine,        label: 'Check In'  },
     { to: '/member/profile',   icon: User,            label: 'Profile'   },
   ],
@@ -74,6 +76,10 @@ export default function AppLayout({ role }: { role: Role }) {
   const hasApprovedGym = role === 'member'
     ? (membershipData?.memberships ?? []).some((m: any) => m.status === 'approved')
     : true;
+
+  const visibleItems = role === 'member'
+    ? items.filter((item) => item.to !== '/member/membership' || hasApprovedGym)
+    : items;
 
   const navLink = ({ to, icon: Icon, label }: typeof items[0], onClick?: () => void) => {
     const isCheckinLocked = to === '/member/checkin' && !hasApprovedGym;
@@ -126,7 +132,7 @@ export default function AppLayout({ role }: { role: Role }) {
           </div>
         </div>
         <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto">
-          {items.map(item => navLink(item))}
+          {visibleItems.map(item => navLink(item))}
         </nav>
         <div className="p-4 border-t border-atom-border">
           <div className="flex items-center gap-3 px-2 py-2 mb-1">
@@ -178,7 +184,7 @@ export default function AppLayout({ role }: { role: Role }) {
               </button>
             </div>
             <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto">
-              {items.map(item => navLink(item, () => setDrawer(false)))}
+              {visibleItems.map(item => navLink(item, () => setDrawer(false)))}
             </nav>
             <div className="p-4 border-t border-atom-border">
               <button onClick={() => { logout(); setDrawer(false); }}
@@ -199,8 +205,8 @@ export default function AppLayout({ role }: { role: Role }) {
       {/* Mobile Bottom Tab Bar — only show first 5 items max to avoid crowding */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30
                       bg-atom-surface/95 backdrop-blur border-t border-atom-border grid"
-        style={{ gridTemplateColumns: `repeat(${Math.min(items.length, 6)}, 1fr)` }}>
-        {items.slice(0, 6).map(({ to, icon: Icon, label }) => {
+        style={{ gridTemplateColumns: `repeat(${Math.min(visibleItems.length, 6)}, 1fr)` }}>
+        {visibleItems.slice(0, 6).map(({ to, icon: Icon, label }) => {
           const isCheckin       = to === '/member/checkin';
           const isCheckinLocked = isCheckin && !hasApprovedGym;
 

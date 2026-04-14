@@ -128,7 +128,7 @@ router.get('/members', requireRole('super_admin', 'gym_admin'), async (req, res)
     let query = supabaseAdmin
       .from('gym_members')
       .select(
-        `id, status, subscription_plan, subscription_status, subscription_start, subscription_end,
+        `id, gym_id, user_id, status, subscription_plan, subscription_status, subscription_start, subscription_end,
          amount_paid, joined_at, created_at, updated_at,
          user:users!gym_members_user_id_fkey(id, email, full_name, phone, created_at),
          gym:gyms(id, name, gym_code, city, status)`,

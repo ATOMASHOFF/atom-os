@@ -164,5 +164,30 @@ export const GenerateExerciseSchema = z.object({
   focus: z.string().max(100).optional(),
 });
 
+// ─── MEMBERSHIP PLANS & SUBSCRIPTIONS ───────────────────────────────────────
+
+export const CreateMembershipPlanSchema = z.object({
+  name: z.string().min(2, 'Plan name is required').max(100),
+  duration_days: z.number().int().min(1).max(3650),
+  price: z.number().min(0),
+  description: z.string().max(500).optional(),
+  is_active: z.boolean().optional(),
+});
+
+export const UpdateMembershipPlanSchema = CreateMembershipPlanSchema.partial().refine(
+  (data) => Object.keys(data).length > 0,
+  { message: 'At least one field is required for update' }
+);
+
+export const AssignMemberSubscriptionSchema = z.object({
+  member_id: z.string().uuid('Invalid member ID'),
+  plan_id: z.string().uuid('Invalid plan ID'),
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD').optional(),
+  payment_status: z.enum(['paid', 'pending', 'failed']).default('paid'),
+});
+
 export type GeneratePlanInput = z.infer<typeof GeneratePlanSchema>;
 export type GenerateExerciseInput = z.infer<typeof GenerateExerciseSchema>;
+export type CreateMembershipPlanInput = z.infer<typeof CreateMembershipPlanSchema>;
+export type UpdateMembershipPlanInput = z.infer<typeof UpdateMembershipPlanSchema>;
+export type AssignMemberSubscriptionInput = z.infer<typeof AssignMemberSubscriptionSchema>;

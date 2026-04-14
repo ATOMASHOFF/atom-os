@@ -1,13 +1,13 @@
 // apps/web/src/components/admin/SubscriptionModal.tsx
-// Used in AdminMembers — manage a member's subscription plan, dates, payment
+// Used in AdminMembers — assign membership plan to a member.
 
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { membershipApi } from '@/lib/api';
+import { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { plansApi, subscriptionsApi } from '@/lib/api';
 import { Modal } from '@/components/ui/Modal';
-import { CreditCard, Calendar, Check } from 'lucide-react';
+import { Calendar, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { format, addMonths, addYears } from 'date-fns';
+import { addDays, format } from 'date-fns';
 
 interface Props {
   member: any;
@@ -15,62 +15,59 @@ interface Props {
   onClose: () => void;
 }
 
-const PLANS = [
-  { key: 'monthly',       label: 'Monthly',      months: 1,   icon: '📅' },
-  { key: 'quarterly',     label: 'Quarterly',    months: 3,   icon: '📆' },
-  { key: 'annual',        label: 'Annual',       months: 12,  icon: '🏆' },
-  { key: 'pay_as_you_go', label: 'Pay As You Go', months: null, icon: '💳' },
-] as const;
-
 export function SubscriptionModal({ member, open, onClose }: Props) {
   const qc = useQueryClient();
+  const targetMemberId = member?.user_id ?? member?.user?.id;
 
   const today = format(new Date(), 'yyyy-MM-dd');
-  const [plan,       setPlan]       = useState<string>(member?.subscription_plan ?? 'monthly');
-  const [startDate,  setStartDate]  = useState(member?.subscription_start ?? today);
-  const [endDate,    setEndDate]    = useState(member?.subscription_end ?? '');
-  const [amountPaid, setAmountPaid] = useState<string>(String(member?.amount_paid ?? ''));
-  const [notes,      setNotes]      = useState(member?.notes ?? '');
+  const [planId, setPlanId] = useState<string>('');
+  const [startDate, setStartDate] = useState(today);
+  const [paymentStatus, setPaymentStatus] = useState<'paid' | 'pending' | 'failed'>('paid');
 
-  // Auto-calculate end date when plan or start changes
-  function handlePlanChange(p: string) {
-    setPlan(p);
-    const planObj = PLANS.find(pl => pl.key === p);
-    if (planObj?.months && startDate) {
-      const end = addMonths(new Date(startDate), planObj.months);
-      setEndDate(format(end, 'yyyy-MM-dd'));
-    }
-  }
+  const { data: plansData, isLoading: plansLoading } = useQuery<any>({
+    queryKey: ['admin-membership-plans'],
+    queryFn: () => plansApi.list(),
+    enabled: open,
+  });
 
-  function handleStartChange(d: string) {
-    setStartDate(d);
-    const planObj = PLANS.find(pl => pl.key === plan);
-    if (planObj?.months && d) {
-      const end = addMonths(new Date(d), planObj.months);
-      setEndDate(format(end, 'yyyy-MM-dd'));
+  const activePlans = useMemo(() => (plansData?.plans ?? []).filter((p: any) => p.is_active), [plansData]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!planId && activePlans.length > 0) {
+      setPlanId(activePlans[0].id);
     }
-  }
+  }, [open, planId, activePlans]);
 
   const mut = useMutation({
-    mutationFn: () => membershipApi.updateMember(member.id, {
-      subscription_plan:   plan,
-      subscription_status: 'active',
-      subscription_start:  startDate,
-      subscription_end:    endDate || undefined,
-      amount_paid:         amountPaid ? Number(amountPaid) : 0,
-      notes:               notes || undefined,
-      status:              'approved', // ensure still approved
-    }),
+    mutationFn: () => {
+      if (!targetMemberId) {
+        throw new Error('Member ID is missing. Please refresh and try again.');
+      }
+
+      return subscriptionsApi.assign({
+      member_id: targetMemberId,
+      plan_id: planId,
+      start_date: startDate,
+      payment_status: paymentStatus,
+      });
+    },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['members'] });
+      qc.invalidateQueries({ queryKey: ['admin-members-approved'] });
+      qc.invalidateQueries({ queryKey: ['admin-members-all'] });
+      qc.invalidateQueries({ queryKey: ['admin-membership-plans'] });
+      if (targetMemberId) qc.invalidateQueries({ queryKey: ['member-subscriptions', targetMemberId] });
       qc.invalidateQueries({ queryKey: ['membership-stats'] });
-      toast.success('Subscription updated');
+      toast.success('Membership assigned');
       onClose();
     },
     onError: (e: any) => toast.error(e.message),
   });
 
-  const selectedPlan = PLANS.find(p => p.key === plan);
+  const selectedPlan = activePlans.find((p: any) => p.id === planId);
+  const endDate = selectedPlan
+    ? format(addDays(new Date(startDate), Math.max(0, selectedPlan.duration_days - 1)), 'yyyy-MM-dd')
+    : '';
 
   return (
     <Modal
@@ -84,10 +81,10 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
           <button
             className="btn-primary flex items-center gap-2"
             onClick={() => mut.mutate()}
-            disabled={mut.isPending}
+            disabled={mut.isPending || !planId}
           >
             <Check size={15} />
-            {mut.isPending ? 'Saving...' : 'Save Subscription'}
+            {mut.isPending ? 'Assigning...' : 'Assign Membership'}
           </button>
         </>
       }
@@ -102,44 +99,30 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
           <p className="font-500 text-atom-text text-sm truncate">{member?.user?.full_name}</p>
           <p className="text-atom-muted text-xs truncate">{member?.user?.email}</p>
         </div>
-        {member?.subscription_plan && (
-          <span className="badge-blue capitalize flex-shrink-0 text-xs">
-            {member.subscription_plan}
-          </span>
-        )}
+        <span className="badge-blue capitalize flex-shrink-0 text-xs">{member?.status}</span>
       </div>
 
       <div className="flex flex-col gap-4">
         {/* Plan selector */}
         <div>
-          <label className="label">Subscription Plan</label>
-          <div className="grid grid-cols-2 gap-2">
-            {PLANS.map(p => (
-              <button
-                key={p.key}
-                onClick={() => handlePlanChange(p.key)}
-                className={`flex items-center gap-2.5 px-3 py-3 rounded-xl border text-sm
-                            text-left transition-all duration-150 ${
-                  plan === p.key
-                    ? 'border-atom-accent bg-atom-accent/10 text-atom-accent'
-                    : 'border-atom-border text-atom-muted hover:border-atom-accent/40 hover:text-atom-text'
-                }`}
-              >
-                <span className="text-base">{p.icon}</span>
-                <div>
-                  <p className="font-500 leading-none">{p.label}</p>
-                  {p.months && (
-                    <p className="text-xs opacity-60 mt-0.5">{p.months} month{p.months > 1 ? 's' : ''}</p>
-                  )}
-                </div>
-                {plan === p.key && <Check size={14} className="ml-auto text-atom-accent" />}
-              </button>
+          <label className="label">Select Plan</label>
+          <select
+            className="input"
+            value={planId}
+            onChange={(e) => setPlanId(e.target.value)}
+            disabled={plansLoading || activePlans.length === 0}
+          >
+            {activePlans.length === 0 && <option value="">No active plans available</option>}
+            {activePlans.map((p: any) => (
+              <option key={p.id} value={p.id}>
+                {p.name} - {p.duration_days}d - Rs {Number(p.price).toFixed(2)}
+              </option>
             ))}
-          </div>
+          </select>
         </div>
 
         {/* Dates */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="label">Start Date</label>
             <div className="relative">
@@ -147,7 +130,7 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
               <input
                 type="date" className="input pl-9 text-sm"
                 value={startDate}
-                onChange={e => handleStartChange(e.target.value)}
+                onChange={e => setStartDate(e.target.value)}
               />
             </div>
           </div>
@@ -158,43 +141,26 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
               <input
                 type="date" className="input pl-9 text-sm"
                 value={endDate}
-                onChange={e => setEndDate(e.target.value)}
+                readOnly
               />
             </div>
           </div>
-        </div>
-
-        {/* Amount */}
-        <div>
-          <label className="label">Amount Paid (₹)</label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-atom-muted text-sm font-mono">₹</span>
-            <input
-              type="number" min={0} className="input pl-8 font-mono text-sm"
-              placeholder="0"
-              value={amountPaid}
-              onChange={e => setAmountPaid(e.target.value)}
-            />
+          <div>
+            <label className="label">Payment</label>
+            <select className="input" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value as any)}>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+            </select>
           </div>
         </div>
 
-        {/* Notes */}
-        <div>
-          <label className="label">Notes (optional)</label>
-          <textarea
-            className="input resize-none h-16 text-sm"
-            placeholder="Payment method, reference number, etc."
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-          />
-        </div>
-
         {/* Summary */}
-        {startDate && endDate && (
+        {selectedPlan && startDate && endDate && (
           <div className="p-3 rounded-xl bg-atom-accent/5 border border-atom-accent/20 text-sm">
             <div className="flex justify-between text-atom-muted mb-1">
               <span>Plan</span>
-              <span className="text-atom-text capitalize font-500">{selectedPlan?.label}</span>
+              <span className="text-atom-text capitalize font-500">{selectedPlan.name}</span>
             </div>
             <div className="flex justify-between text-atom-muted mb-1">
               <span>Duration</span>
@@ -202,12 +168,10 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
                 {startDate} → {endDate}
               </span>
             </div>
-            {amountPaid && (
-              <div className="flex justify-between text-atom-muted">
-                <span>Amount</span>
-                <span className="text-atom-accent font-mono font-700">₹{amountPaid}</span>
-              </div>
-            )}
+            <div className="flex justify-between text-atom-muted">
+              <span>Price</span>
+              <span className="text-atom-accent font-mono font-700">Rs {Number(selectedPlan.price).toFixed(2)}</span>
+            </div>
           </div>
         )}
       </div>

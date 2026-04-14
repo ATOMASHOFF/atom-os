@@ -3,33 +3,37 @@
 //   1. Added SuperMembers import and route
 //   2. AdminAnnouncements import and route already there
 import { useEffect } from 'react';
+import { useRef } from 'react';
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore, useUser } from '@/store/auth';
 
-import LoginPage  from '@/pages/auth/LoginPage';
-import SignupPage from '@/pages/auth/SignupPage';
+const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
+const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
 
-import SuperDashboard from '@/pages/super/SuperDashboard';
-import SuperGyms      from '@/pages/super/SuperGyms';
-import SuperUsers     from '@/pages/super/SuperUsers';
-import SuperMembers   from '@/pages/super/SuperMembers';   // ← NEW
+const SuperDashboard = lazy(() => import('@/pages/super/SuperDashboard'));
+const SuperGyms = lazy(() => import('@/pages/super/SuperGyms'));
+const SuperUsers = lazy(() => import('@/pages/super/SuperUsers'));
+const SuperMembers = lazy(() => import('@/pages/super/SuperMembers'));
 
-import AdminDashboard     from '@/pages/admin/AdminDashboard';
-import AdminMembers       from '@/pages/admin/AdminMembers';
-import AdminAttendance    from '@/pages/admin/AdminAttendance';
-import AdminQRScreen      from '@/pages/admin/AdminQRScreen';
-import AdminSettings      from '@/pages/admin/AdminSettings';
-import AdminAnalytics     from '@/pages/admin/AdminAnalytics';
-import AdminAnnouncements from '@/pages/admin/AdminAnnouncements';
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
+const AdminMembers = lazy(() => import('@/pages/admin/AdminMembers'));
+const AdminAttendance = lazy(() => import('@/pages/admin/AdminAttendance'));
+const AdminQRScreen = lazy(() => import('@/pages/admin/AdminQRScreen'));
+const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
+const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics'));
+const AdminAnnouncements = lazy(() => import('@/pages/admin/AdminAnnouncements'));
+const AdminMembershipPlans = lazy(() => import('@/pages/admin/AdminMembershipPlans'));
 
-import MemberDashboard from '@/pages/member/MemberDashboard';
-import MemberWorkouts  from '@/pages/member/MemberWorkouts';
-import MemberCheckin   from '@/pages/member/MemberCheckin';
-import MemberProfile   from '@/pages/member/MemberProfile';
-import MemberProgress  from '@/pages/member/MemberProgress';
-import MemberAIPlan    from '@/pages/member/MemberAIPlan';
+const MemberDashboard = lazy(() => import('@/pages/member/MemberDashboard'));
+const MemberWorkouts = lazy(() => import('@/pages/member/MemberWorkouts'));
+const MemberCheckin = lazy(() => import('@/pages/member/MemberCheckin'));
+const MemberProfile = lazy(() => import('@/pages/member/MemberProfile'));
+const MemberProgress = lazy(() => import('@/pages/member/MemberProgress'));
+const MemberAIPlan = lazy(() => import('@/pages/member/MemberAIPlan'));
+const MemberMyMembership = lazy(() => import('@/pages/member/MemberMyMembership'));
 
 import AppLayout from '@/components/layout/AppLayout';
 import { InstallBanner, UpdateBanner, OfflineBanner } from '@/components/ui/PWABanner';
@@ -57,22 +61,31 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 function RequireRole({ role, children }: { role: string | string[]; children: React.ReactNode }) {
   const user  = useUser();
   const roles = Array.isArray(role) ? role : [role];
-  if (!user || !roles.includes(user.role)) return <Navigate to="/unauthorized" replace />;
+  if (!user) return <Navigate to="/unauthorized" replace />;
+  const normalizedRole = user?.role === 'admin' ? 'gym_admin' : user?.role;
+  if (!normalizedRole || !roles.includes(normalizedRole)) return <Navigate to="/unauthorized" replace />;
   return <>{children}</>;
 }
 
 function RoleRedirect() {
   const user = useUser();
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'super_admin') return <Navigate to="/super/dashboard" replace />;
-  if (user.role === 'gym_admin')   return <Navigate to="/admin/dashboard" replace />;
+  const normalizedRole = user.role === 'admin' ? 'gym_admin' : user.role;
+  if (normalizedRole === 'super_admin') return <Navigate to="/super/dashboard" replace />;
+  if (normalizedRole === 'gym_admin')   return <Navigate to="/admin/dashboard" replace />;
   return <Navigate to="/member/dashboard" replace />;
 }
 
 function AppInit() {
   const fetchMe       = useAuthStore((s) => s.fetchMe);
   const isInitialized = useAuthStore((s) => s.isInitialized);
-  useEffect(() => { fetchMe(); }, []);
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    fetchMe();
+  }, [fetchMe]);
 
   if (!isInitialized) {
     return (
@@ -90,6 +103,14 @@ function AppInit() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
+        <Suspense fallback={
+          <div className="min-h-screen bg-atom-bg flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-2 border-atom-accent border-t-transparent rounded-full animate-spin" />
+              <span className="font-display text-atom-muted text-sm uppercase tracking-widest">Loading page...</span>
+            </div>
+          </div>
+        }>
         <Routes>
           <Route path="/login"  element={<LoginPage  />} />
           <Route path="/signup" element={<SignupPage />} />
@@ -117,6 +138,7 @@ function AppInit() {
             <Route path="settings"      element={<AdminSettings      />} />
             <Route path="analytics"     element={<AdminAnalytics     />} />
             <Route path="announcements" element={<AdminAnnouncements />} />
+            <Route path="plans"         element={<AdminMembershipPlans />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
 
@@ -128,6 +150,7 @@ function AppInit() {
             <Route path="workouts"  element={<MemberWorkouts  />} />
             <Route path="progress"  element={<MemberProgress  />} />
             <Route path="ai-plan"   element={<MemberAIPlan    />} />
+            <Route path="membership" element={<MemberMyMembership />} />
             <Route path="checkin"   element={<MemberCheckin   />} />
             <Route path="profile"   element={<MemberProfile   />} />
             <Route index element={<Navigate to="dashboard" replace />} />
@@ -143,6 +166,7 @@ function AppInit() {
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </ErrorBoundary>
   );

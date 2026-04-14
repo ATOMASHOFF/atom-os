@@ -12,6 +12,13 @@ export interface AuthUser {
   gym_id?: string;
 }
 
+function normalizeRole(role: string | null | undefined): UserRole {
+  if (role === 'admin') return 'gym_admin';
+  if (role === 'guest') return 'member';
+  if (role === 'super_admin' || role === 'gym_admin' || role === 'member') return role;
+  return 'member';
+}
+
 declare global {
   namespace Express {
     interface Request { user: AuthUser; }
@@ -70,10 +77,12 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       }
     }
 
+    const normalizedRole = normalizeRole(profile.role as string | null | undefined);
+
     req.user = {
       id: profile.id,
       email: profile.email,
-      role: profile.role as UserRole,
+      role: normalizedRole,
       full_name: profile.full_name,
       gym_id,
     };

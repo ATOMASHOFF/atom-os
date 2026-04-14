@@ -282,7 +282,7 @@ export default function AdminMembers() {
                       <div className="flex gap-3">
                         <button onClick={() => setSubMember(m)}
                           className="flex items-center gap-1.5 text-atom-muted text-xs hover:text-atom-accent transition-colors">
-                          <CreditCard size={13} /> Subscription
+                          <CreditCard size={13} /> Assign Membership
                         </button>
                         <button
                           onClick={() => { if (confirm(`Suspend ${m.user?.full_name}?`)) updateMut.mutate({ id: m.id, body: { status: 'suspended' } }); }}

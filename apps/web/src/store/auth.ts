@@ -42,6 +42,7 @@ const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true, isLoading: true });
     try {
       const data = await authApi.login({ identifier, password });
+      const normalizeRole = (role: string | undefined) => role === 'admin' ? 'gym_admin' : (role ?? 'member');
       // Store tokens
       if (data.access_token)  setToken(data.access_token);
       if (data.refresh_token) setRefreshToken(data.refresh_token);
@@ -49,7 +50,7 @@ const useAuthStore = create<AuthState>((set) => ({
         user: {
           id:        data.user.id,
           email:     data.user.email,
-          role:      data.user.role,
+          role:      normalizeRole(data.user.role),
           full_name: data.user.full_name,
           gym_id:    data.user.gym_id,
         },
@@ -97,13 +98,14 @@ const useAuthStore = create<AuthState>((set) => ({
 
       const json = await response.json();
       const data = json.data;
+      const normalizeRole = (role: string | undefined) => role === 'admin' ? 'gym_admin' : (role ?? 'member');
 
       if (data) {
         set({
           user: {
             id:        data.id,
             email:     data.email,
-            role:      data.role,
+            role:      normalizeRole(data.role),
             full_name: data.full_name,
             gym_id:    data.gym_id,
           },

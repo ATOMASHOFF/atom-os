@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { qrApi } from '@/lib/api';
-import { RefreshCw, Maximize2, Settings, Clock, Wifi, WifiOff } from 'lucide-react';
+import { RefreshCw, Maximize2, Settings, Wifi, WifiOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 function formatInterval(seconds: number): string {
@@ -170,15 +170,6 @@ export default function AdminQRScreen() {
                 }`}
               style={{ width: `${pct}%` }}
             />
-          </div>
-
-          <div className="flex items-center gap-2 text-atom-muted text-sm">
-            <Clock size={14} className={isExpiring ? 'text-atom-warning' : 'text-atom-accent'} />
-            <span className={`font-mono ${isExpiring ? 'text-atom-warning' : ''}`}>
-              {secondsLeft > 0
-                ? `Refreshes in ${secondsLeft}s`
-                : 'Generating new code...'}
-            </span>
           </div>
 
           {/* Connection status */}

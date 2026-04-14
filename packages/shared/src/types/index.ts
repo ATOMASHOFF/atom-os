@@ -214,3 +214,28 @@ export interface WorkoutPlan {
   days: PlanDay[];
   tips: string[];
 }
+
+export interface MembershipPlan {
+  id: string;
+  gym_id: string;
+  name: string;
+  duration_days: number;
+  price: number;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MemberSubscription {
+  id: string;
+  gym_id: string;
+  member_id: string;
+  plan_id: string;
+  start_date: string;
+  end_date: string;
+  status: 'active' | 'expired' | 'cancelled';
+  payment_status: 'paid' | 'pending' | 'failed';
+  created_at: string;
+  plan?: MembershipPlan;
+}
