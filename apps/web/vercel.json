@@ -1,5 +1,6 @@
 {
-    "buildCommand": "cd ../.. && npm install && npm run build:shared && cd apps/web && npm run build",
+    "installCommand": "cd ../.. && npm ci",
+    "buildCommand": "cd ../.. && npm run build:shared && npm run build:web",
     "outputDirectory": "dist",
     "rewrites": [
         {
