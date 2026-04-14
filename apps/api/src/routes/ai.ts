@@ -95,8 +95,8 @@ Create a unique exercise that targets the specified muscle group using the given
             return serverError(res, 'AI returned invalid JSON. Please try again.');
         }
 
-        // Validate exercise has required structure (AI returns exercise_name, not name)
-        if (!exercise.exercise_name || !exercise.equipment) {
+        // Validate exercise has required structure
+        if (!exercise.name || !exercise.equipment) {
             return serverError(res, 'AI returned incomplete exercise. Please try again.');
         }
 
