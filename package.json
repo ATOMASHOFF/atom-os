@@ -18,6 +18,8 @@
     "lint": "npm run lint --workspaces --if-present"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "^8.58.2",
+    "eslint": "^10.2.0",
     "typescript": "^5.4.5"
   }
 }
