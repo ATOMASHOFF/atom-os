@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build --workspace=apps/web",
+  "outputDirectory": "apps/web/dist",
+  "framework": "vite",
+  "env": {
+    "VITE_API_URL": "@api-url",
+    "VITE_SUPABASE_URL": "@supabase-url",
+    "VITE_SUPABASE_ANON_KEY": "@supabase-anon-key"
+  }
+}
