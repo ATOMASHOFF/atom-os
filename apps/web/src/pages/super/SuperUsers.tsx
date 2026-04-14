@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
-import { Search, Shield } from 'lucide-react';
+import { Search, Shield, Trash2 } from 'lucide-react';
+import { useUser } from '@/store/auth';
 import toast from 'react-hot-toast';
 
 export default function SuperUsers() {
   const qc = useQueryClient();
+  const currentUser = useUser();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
 
@@ -19,6 +21,15 @@ export default function SuperUsers() {
   const roleMut = useMutation({
     mutationFn: ({ id, role }: { id: string; role: string }) => adminApi.updateUserRole(id, role),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-users'] }); toast.success('Role updated'); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => adminApi.deleteUser(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-users'] });
+      toast.success('User deleted');
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -85,20 +96,37 @@ export default function SuperUsers() {
                   {new Date(u.created_at).toLocaleDateString('en-IN')}
                 </td>
                 <td className="py-3 px-3">
-                  {u.role !== 'super_admin' && (
-                    <button
-                      onClick={() => {
-                        const next = u.role === 'member' ? 'gym_admin' : 'member';
-                        if (confirm(`Change ${u.full_name} to ${next}?`)) {
-                          roleMut.mutate({ id: u.id, role: next });
-                        }
-                      }}
-                      className="text-xs flex items-center gap-1.5 text-atom-muted hover:text-atom-accent transition-colors"
-                    >
-                      <Shield size={13} />
-                      Toggle Role
-                    </button>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {u.role !== 'super_admin' && (
+                      <button
+                        onClick={() => {
+                          const next = u.role === 'member' ? 'gym_admin' : 'member';
+                          if (confirm(`Change ${u.full_name} to ${next}?`)) {
+                            roleMut.mutate({ id: u.id, role: next });
+                          }
+                        }}
+                        className="text-xs flex items-center gap-1.5 text-atom-muted hover:text-atom-accent transition-colors"
+                      >
+                        <Shield size={13} />
+                        Toggle Role
+                      </button>
+                    )}
+
+                    {u.role !== 'super_admin' && u.id !== currentUser?.id && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete ${u.full_name || u.email}? This action cannot be undone.`)) {
+                            deleteMut.mutate(u.id);
+                          }
+                        }}
+                        className="text-xs flex items-center gap-1.5 text-atom-muted hover:text-atom-danger transition-colors"
+                        disabled={deleteMut.isPending}
+                      >
+                        <Trash2 size={13} />
+                        Delete User
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

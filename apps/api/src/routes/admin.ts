@@ -3,7 +3,7 @@
 
 import { Router } from 'express';
 import { supabaseAdmin } from '../utils/supabase';
-import { ok, serverError } from '../utils/response';
+import { badRequest, forbidden, notFound, ok, serverError } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
 import { requireRole } from '../middleware/roles';
 
@@ -203,8 +203,32 @@ router.patch('/users/:id/role', requireRole('super_admin'), async (req, res) => 
 // DELETE /api/admin/users/:id
 router.delete('/users/:id', requireRole('super_admin'), async (req, res) => {
   try {
+    const targetUserId = req.params.id;
+
+    if (targetUserId === req.user.id) {
+      return badRequest(res, 'You cannot delete your own account');
+    }
+
+    const { data: targetUser, error: targetLookupError } = await supabaseAdmin
+      .from('users')
+      .select('id, role')
+      .eq('id', targetUserId)
+      .maybeSingle();
+
+    if (targetLookupError) {
+      return serverError(res, 'Failed to load target user', targetLookupError);
+    }
+
+    if (!targetUser) {
+      return notFound(res, 'User not found');
+    }
+
+    if (targetUser.role === 'super_admin') {
+      return forbidden(res, 'Super admin users cannot be deleted');
+    }
+
     // Delete from auth.users (this cascades to all user related data)
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(req.params.id);
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(targetUserId);
 
     if (error) return serverError(res, 'User delete failed', error);
     return ok(res, { success: true, message: 'User deleted successfully' });
