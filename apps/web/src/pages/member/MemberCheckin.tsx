@@ -19,7 +19,13 @@ export default function MemberCheckin() {
   const [scanError, setScanError]   = useState<string | null>(null);
   const [scanning,  setScanning]    = useState(false);
   const scannerRef  = useRef<Html5QrcodeScanner | null>(null);
-  const mountedRef  = useRef(false);
+
+  const cleanupScanner = () => {
+    if (scannerRef.current) {
+      scannerRef.current.clear().catch(() => {});
+      scannerRef.current = null;
+    }
+  };
 
   const { data: membershipData } = useQuery({
     queryKey: ['my-memberships'],
@@ -96,12 +102,15 @@ export default function MemberCheckin() {
 
     return () => {
       clearTimeout(timeout);
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(() => {});
-        scannerRef.current = null;
-      }
+      cleanupScanner();
     };
   }, [scanning]);
+
+  useEffect(() => {
+    return () => {
+      cleanupScanner();
+    };
+  }, []);
 
   if (approvedGyms.length === 0) {
     const pendingGyms = (membershipData?.memberships ?? []).filter((m: any) => m.status === 'pending');
@@ -259,7 +268,11 @@ export default function MemberCheckin() {
             </p>
             <div id="qr-reader" className="w-full rounded-xl overflow-hidden" />
             <button
-              onClick={() => { setScanning(false); setScanState('idle'); }}
+              onClick={() => {
+                cleanupScanner();
+                setScanning(false);
+                setScanState('idle');
+              }}
               className="btn-ghost w-full mt-3 text-sm"
             >
               Cancel

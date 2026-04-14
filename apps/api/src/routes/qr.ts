@@ -26,48 +26,72 @@ async function rotateToken(gym_id: string): Promise<{
   expires_at: string;
   qr_data_url: string;
 } | null> {
-  // Deactivate all current active tokens for this gym
-  await supabaseAdmin
-    .from('qr_tokens')
-    .update({ is_active: false })
-    .eq('gym_id', gym_id)
-    .eq('is_active', true);
+  // Concurrent rotates can race between deactivate and insert.
+  // Retry on unique-constraint collisions from the partial unique index.
+  const maxAttempts = 3;
 
-  // Get rotation interval from gym config
-  const { data: gym } = await supabaseAdmin
-    .from('gyms')
-    .select('qr_rotation_interval_s')
-    .eq('id', gym_id)
-    .single();
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const { error: deactivateError } = await supabaseAdmin
+      .from('qr_tokens')
+      .update({ is_active: false })
+      .eq('gym_id', gym_id)
+      .eq('is_active', true);
 
-  const intervalSeconds = gym?.qr_rotation_interval_s ?? 180; // default 3 min
-  const expires_at = new Date(Date.now() + intervalSeconds * 1000).toISOString();
-  const token = uuidv4();
+    if (deactivateError) {
+      return null;
+    }
 
-  const { data, error } = await supabaseAdmin
-    .from('qr_tokens')
-    .insert({
-      gym_id,
-      token,
-      is_active: true,
-      is_used: false,
-      expires_at,
-    })
-    .select()
-    .single();
+    // Get rotation interval from gym config
+    const { data: gym, error: gymError } = await supabaseAdmin
+      .from('gyms')
+      .select('qr_rotation_interval_s')
+      .eq('id', gym_id)
+      .single();
 
-  if (error || !data) return null;
+    if (gymError) {
+      return null;
+    }
 
-  // Generate QR code as data URL (contains only the token UUID)
-  // The gym_id is NOT in the QR — server validates gym context from the member's JWT
-  const qr_data_url = await QRCode.toDataURL(token, {
-    errorCorrectionLevel: 'H',
-    margin: 2,
-    width: 400,
-    color: { dark: '#000000', light: '#FFFFFF' },
-  });
+    const intervalSeconds = gym?.qr_rotation_interval_s ?? 180; // default 3 min
+    const expires_at = new Date(Date.now() + intervalSeconds * 1000).toISOString();
+    const token = uuidv4();
 
-  return { token, expires_at, qr_data_url };
+    const { data, error } = await supabaseAdmin
+      .from('qr_tokens')
+      .insert({
+        gym_id,
+        token,
+        is_active: true,
+        is_used: false,
+        expires_at,
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      // Generate QR code as data URL (contains only the token UUID)
+      // The gym_id is NOT in the QR — server validates gym context from the member's JWT
+      const qr_data_url = await QRCode.toDataURL(token, {
+        errorCorrectionLevel: 'H',
+        margin: 2,
+        width: 400,
+        color: { dark: '#000000', light: '#FFFFFF' },
+      });
+
+      return { token, expires_at, qr_data_url };
+    }
+
+    const isUniqueViolation =
+      error?.code === '23505' ||
+      /duplicate key value|unique/i.test(error?.message ?? '') ||
+      /already exists/i.test(error?.details ?? '');
+
+    if (!isUniqueViolation || attempt === maxAttempts) {
+      return null;
+    }
+  }
+
+  return null;
 }
 
 // GET /api/qr/current

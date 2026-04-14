@@ -44,10 +44,10 @@ export function validate(schema: ZodSchema) {
     const result = schema.safeParse(req.body);
     if (!result.success) {
       const flattened = result.error.flatten();
-      // Merge formErrors into fieldErrors so they reach the client
+      // Surface both field-level and object-level Zod errors to the client.
       const errors = {
         ...flattened.fieldErrors,
-        ...(flattened.formErrors.length > 0 ? { _form: flattened.formErrors } : {}),
+        ...(flattened.formErrors.length > 0 ? { formErrors: flattened.formErrors } : {}),
       };
       validationError(res, errors);
       return;
@@ -61,7 +61,12 @@ export function validateQuery(schema: ZodSchema) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.query);
     if (!result.success) {
-      validationError(res, result.error.flatten().fieldErrors);
+      const flattened = result.error.flatten();
+      const errors = {
+        ...flattened.fieldErrors,
+        ...(flattened.formErrors.length > 0 ? { formErrors: flattened.formErrors } : {}),
+      };
+      validationError(res, errors);
       return;
     }
     req.query = result.data as typeof req.query;

@@ -50,7 +50,7 @@ export const CreateGymSchema = z.object({
   pincode: z.string().max(10).optional(),
   phone: z.string().max(20).optional(),
   email: z.string().email().optional(),
-  qr_rotation_interval_s: z.number().min(10).max(3600).default(180),
+  qr_rotation_interval_s: z.number().min(10).max(2592000).default(180),
 });
 
 export const UpdateGymSchema = CreateGymSchema.partial();
@@ -70,7 +70,7 @@ export const JoinGymSchema = z.object({
 });
 
 export const UpdateMembershipSchema = z.object({
-  status: z.enum(['approved', 'rejected', 'suspended']),
+  status: z.enum(['pending', 'approved', 'rejected', 'suspended']),
   notes: z.string().max(500).optional(),
   subscription_plan: z.enum(['monthly', 'quarterly', 'annual', 'pay_as_you_go']).optional(),
   subscription_start: z.string().optional(),

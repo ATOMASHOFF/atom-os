@@ -241,7 +241,7 @@ export const aiApi = {
 
 // ─── WORKOUTS ─────────────────────────────────────────────────────────────────
 export const workoutApi = {
-  list: (params?: { page?: number; month?: string }) => {
+  list: (params?: { page?: number; limit?: number; month?: string }) => {
     const q = new URLSearchParams(params as any).toString();
     return api.get<any>(`/api/workouts${q ? `?${q}` : ''}`);
   },

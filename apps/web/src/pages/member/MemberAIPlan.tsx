@@ -107,6 +107,25 @@ export default function MemberAIPlan() {
 
     const saveWorkoutMut = useMutation({
         mutationFn: async (day: PlanDay) => {
+            const parseRepsForLogging = (rawReps: string): { reps?: number; repsNote?: string } => {
+                const value = rawReps.trim();
+
+                // Exact numeric values are safe to persist in reps.
+                const exactMatch = value.match(/^\d+$/);
+                if (exactMatch) {
+                    return { reps: Number(value) };
+                }
+
+                // Ranges (e.g. 8-12 or 8–12): store lower bound for charting + preserve full target in notes.
+                const rangeMatch = value.match(/^(\d+)\s*[-–]\s*(\d+)$/);
+                if (rangeMatch) {
+                    return { reps: Number(rangeMatch[1]), repsNote: `Target reps: ${value}` };
+                }
+
+                // Non-numeric targets (e.g. AMRAP, 30 sec): keep reps null/undefined and save target as text.
+                return { repsNote: `Target reps: ${value}` };
+            };
+
             // Create workout log for today
             const { log } = await workoutApi.create({
                 title: `${plan?.title} — ${day.label}`,
@@ -117,12 +136,15 @@ export default function MemberAIPlan() {
             // Add all sets for each exercise
             for (const ex of day.exercises) {
                 if (ex.exercise_id) {
+                    const parsed = parseRepsForLogging(ex.reps);
+                    const mergedNotes = [ex.notes, parsed.repsNote].filter(Boolean).join(' | ');
+
                     for (let s = 1; s <= ex.sets; s++) {
                         await workoutApi.addSet(log.id, {
                             exercise_id: ex.exercise_id,
                             set_number: s,
-                            reps: parseInt(ex.reps) || 10,
-                            notes: ex.notes,
+                            reps: parsed.reps,
+                            notes: mergedNotes || undefined,
                         });
                     }
                 }

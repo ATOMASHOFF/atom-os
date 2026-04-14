@@ -28,7 +28,7 @@ export default function MemberDashboard() {
 
   const { data: recentWorkouts } = useQuery({
     queryKey: ['workouts'],
-    queryFn: () => workoutApi.list({ limit: 3 } as any),
+    queryFn: () => workoutApi.list({ limit: 3 }),
   });
 
   const memberships   = membershipData?.memberships ?? [];

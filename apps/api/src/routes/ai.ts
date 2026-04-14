@@ -42,7 +42,7 @@ IMPORTANT: You MUST respond with ONLY valid JSON. No markdown, no explanation, n
 
 The JSON must match this exact structure:
 {
-  "exercise_name": "string — descriptive exercise name",
+    "name": "string — descriptive exercise name",
   "description": "string — detailed description of how to perform the exercise",
   "muscle_groups": ["string — array of primary muscle groups worked"],
   "equipment": "string — equipment needed",
@@ -53,7 +53,7 @@ The JSON must match this exact structure:
 }
 
 Rules:
-- The exercise_name MUST be unique and descriptive
+- The name MUST be unique and descriptive
 - Focus on the specified muscle_group and equipment
 - Match the difficulty level
 - Include proper form cues and safety tips

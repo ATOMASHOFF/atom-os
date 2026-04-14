@@ -8,16 +8,22 @@ import {
   ok, created, badRequest, notFound, serverError, forbidden,
 } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
-import { validate } from '../middleware/roles';
+import { validate, validateQuery } from '../middleware/roles';
 import {
   CreateWorkoutLogSchema,
   UpdateWorkoutLogSchema,
   CreateWorkoutSetSchema,
   CreateExerciseSchema,
+  PaginationSchema,
 } from '@atom-os/shared';
+import { z } from 'zod';
 
 const router = Router();
 router.use(authMiddleware); // All workout routes require auth
+
+const WorkoutListQuerySchema = PaginationSchema.extend({
+  month: z.string().regex(/^\d{4}-\d{2}$/).optional(),
+});
 
 // ─── EXERCISES ────────────────────────────────────────────────────────────────
 
@@ -60,7 +66,7 @@ router.post('/exercises', validate(CreateExerciseSchema), async (req, res) => {
 // ─── WORKOUT LOGS ─────────────────────────────────────────────────────────────
 
 // GET /api/workouts — member's workout log history
-router.get('/', async (req, res) => {
+router.get('/', validateQuery(WorkoutListQuerySchema), async (req, res) => {
   try {
     const { page = 1, limit = 20, month } = req.query as {
       page?: number; limit?: number; month?: string;
