@@ -77,7 +77,7 @@ self.addEventListener('fetch', (event) => {
 
 // ── STRATEGIES ────────────────────────────────────────────────────────────────
 
-async function serveAppShell(request: Request) {
+async function serveAppShell(request) {
   // Prefer network so users get the latest deployed index.html without hard refresh.
   try {
     const response = await fetch(request, { cache: 'no-store' });
@@ -125,7 +125,7 @@ async function serveAppShell(request: Request) {
   }
 }
 
-async function networkFirstApi(request: Request) {
+async function networkFirstApi(request) {
   const url = new URL(request.url);
   
   // These should NEVER be cached
@@ -154,7 +154,7 @@ async function networkFirstApi(request: Request) {
   }
 }
 
-async function cacheFirstAsset(request: Request) {
+async function cacheFirstAsset(request) {
   const cached = await caches.match(request);
   if (cached) return cached;
   try {
