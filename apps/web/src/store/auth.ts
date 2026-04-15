@@ -1,6 +1,18 @@
 import { create } from 'zustand';
 import { authApi, setToken, setRefreshToken, clearToken } from '@/lib/api';
 
+function normalizeRole(role: string | undefined): 'super_admin' | 'gym_admin' | 'member' {
+  const value = String(role ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+
+  if (value === 'super_admin' || value === 'superadmin') return 'super_admin';
+  if (value === 'gym_admin' || value === 'gymadmin' || value === 'admin' || value === 'owner' || value === 'gym_owner') return 'gym_admin';
+  if (value === 'member' || value === 'guest' || value === 'user' || value === 'client') return 'member';
+  return 'member';
+}
+
 interface AuthUser {
   id: string;
   email: string;
@@ -42,7 +54,6 @@ const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true, isLoading: true });
     try {
       const data = await authApi.login({ identifier, password });
-      const normalizeRole = (role: string | undefined) => role === 'admin' ? 'gym_admin' : (role ?? 'member');
       // Store tokens
       if (data.access_token)  setToken(data.access_token);
       if (data.refresh_token) setRefreshToken(data.refresh_token);
@@ -98,7 +109,6 @@ const useAuthStore = create<AuthState>((set) => ({
 
       const json = await response.json();
       const data = json.data;
-      const normalizeRole = (role: string | undefined) => role === 'admin' ? 'gym_admin' : (role ?? 'member');
 
       if (data) {
         set({

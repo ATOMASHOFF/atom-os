@@ -51,6 +51,18 @@ const queryClient = new QueryClient({
   },
 });
 
+function normalizeRole(role: string | undefined): 'super_admin' | 'gym_admin' | 'member' {
+  const value = String(role ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+
+  if (value === 'super_admin' || value === 'superadmin') return 'super_admin';
+  if (value === 'gym_admin' || value === 'gymadmin' || value === 'admin' || value === 'owner' || value === 'gym_owner') return 'gym_admin';
+  if (value === 'member' || value === 'guest' || value === 'user' || value === 'client') return 'member';
+  return 'member';
+}
+
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const user     = useUser();
   const location = useLocation();
@@ -62,7 +74,7 @@ function RequireRole({ role, children }: { role: string | string[]; children: Re
   const user  = useUser();
   const roles = Array.isArray(role) ? role : [role];
   if (!user) return <Navigate to="/unauthorized" replace />;
-  const normalizedRole = user?.role === 'admin' ? 'gym_admin' : user?.role;
+  const normalizedRole = normalizeRole(user?.role);
   if (!normalizedRole || !roles.includes(normalizedRole)) return <Navigate to="/unauthorized" replace />;
   return <>{children}</>;
 }
@@ -70,7 +82,7 @@ function RequireRole({ role, children }: { role: string | string[]; children: Re
 function RoleRedirect() {
   const user = useUser();
   if (!user) return <Navigate to="/login" replace />;
-  const normalizedRole = user.role === 'admin' ? 'gym_admin' : user.role;
+  const normalizedRole = normalizeRole(user.role);
   if (normalizedRole === 'super_admin') return <Navigate to="/super/dashboard" replace />;
   if (normalizedRole === 'gym_admin')   return <Navigate to="/admin/dashboard" replace />;
   return <Navigate to="/member/dashboard" replace />;

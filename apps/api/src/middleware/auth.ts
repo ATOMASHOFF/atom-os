@@ -13,9 +13,14 @@ export interface AuthUser {
 }
 
 function normalizeRole(role: string | null | undefined): UserRole {
-  if (role === 'admin') return 'gym_admin';
-  if (role === 'guest') return 'member';
-  if (role === 'super_admin' || role === 'gym_admin' || role === 'member') return role;
+  const value = String(role ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+
+  if (value === 'super_admin' || value === 'superadmin') return 'super_admin';
+  if (value === 'gym_admin' || value === 'gymadmin' || value === 'admin' || value === 'owner' || value === 'gym_owner') return 'gym_admin';
+  if (value === 'member' || value === 'guest' || value === 'user' || value === 'client') return 'member';
   return 'member';
 }
 
