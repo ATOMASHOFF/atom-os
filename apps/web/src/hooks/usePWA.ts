@@ -1,11 +1,12 @@
 // apps/web/src/hooks/usePWA.ts
 // Registers the service worker and manages the install prompt
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // ── SERVICE WORKER REGISTRATION ───────────────────────────────────────────────
 export function useServiceWorker() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
     if (!import.meta.env.PROD) return;
@@ -13,6 +14,7 @@ export function useServiceWorker() {
 
     let registration: ServiceWorkerRegistration | null = null;
     let intervalId: number | undefined;
+    let hasRefreshed = false;
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible' && registration) {
@@ -36,7 +38,12 @@ export function useServiceWorker() {
       })
       .then(reg => {
         registration = reg;
+        registrationRef.current = reg;
         console.log('[PWA] Service worker registered:', reg.scope);
+
+        if (reg.waiting) {
+          setUpdateAvailable(true);
+        }
 
         // Detect when a new SW is waiting to activate
         reg.addEventListener('updatefound', () => {
@@ -56,15 +63,34 @@ export function useServiceWorker() {
       })
       .catch(err => console.warn('[PWA] SW registration failed:', err));
 
+    const onControllerChange = () => {
+      if (hasRefreshed) return;
+      hasRefreshed = true;
+      window.location.reload();
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+
     return () => {
       if (intervalId) window.clearInterval(intervalId);
       document.removeEventListener('visibilitychange', handleVisibility);
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
     };
   }, []);
 
   function applyUpdate() {
-    navigator.serviceWorker.controller?.postMessage('SKIP_WAITING');
-    window.location.reload();
+    const registration = registrationRef.current;
+
+    if (registration?.waiting) {
+      registration.waiting.postMessage('SKIP_WAITING');
+      return;
+    }
+
+    if (registration) {
+      registration.update().catch((err: unknown) =>
+        console.warn('[PWA] Manual update check failed:', err)
+      );
+    }
   }
 
   return { updateAvailable, applyUpdate };

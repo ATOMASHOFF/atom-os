@@ -1,8 +1,8 @@
 // apps/web/public/sw.js
-// Atom OS Service Worker — v2
+// Atom OS Service Worker — v3
 // Fixes: graceful install even if assets aren't cached, reliable offline support
 
-const CACHE_VERSION = 'atom-os-v2';
+const CACHE_VERSION = 'atom-os-v3';
 const SHELL_CACHE   = `${CACHE_VERSION}-shell`;
 const DATA_CACHE    = `${CACHE_VERSION}-data`;
 
@@ -52,7 +52,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigation → serve app shell (index.html) for SPA routing
+  // Always fetch SW and index from network to avoid stale app versions.
+  if (url.pathname === '/sw.js' || url.pathname === '/index.html') {
+    event.respondWith(fetch(request, { cache: 'no-store' }));
+    return;
+  }
+
+  // Navigation → network first for fresh app shell, fallback to cache when offline
   if (request.mode === 'navigate') {
     event.respondWith(serveAppShell(request));
     return;
@@ -72,26 +78,18 @@ self.addEventListener('fetch', (event) => {
 // ── STRATEGIES ────────────────────────────────────────────────────────────────
 
 async function serveAppShell(request: Request) {
-  // Try cache first for the shell
-  const cached = await caches.match('/index.html');
-  if (cached) {
-    // Update cache in background
-    fetch(request).then(resp => {
-      if (resp.ok) {
-        caches.open(SHELL_CACHE).then(cache => cache.put('/index.html', resp));
-      }
-    }).catch(() => {});
-    return cached;
-  }
-  // No cache — fetch and cache
+  // Prefer network so users get the latest deployed index.html without hard refresh.
   try {
-    const response = await fetch(request);
+    const response = await fetch(request, { cache: 'no-store' });
     if (response.ok) {
       const cache = await caches.open(SHELL_CACHE);
       cache.put('/index.html', response.clone());
     }
     return response;
   } catch {
+    const cached = await caches.match('/index.html');
+    if (cached) return cached;
+
     // Return a minimal offline page
     return new Response(
       `<!DOCTYPE html>
