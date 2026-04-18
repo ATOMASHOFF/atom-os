@@ -1,0 +1,63 @@
+# fly.toml — Atom OS API deployment config for Fly.io
+# See https://fly.io/docs/reference/configuration/
+
+app = "atom-os-api"
+primary_region = "sin"  # Singapore (closest to India)
+
+[build]
+builder = "docker"
+dockerfile = "./Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 4000
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 1000
+    soft_limit = 800
+
+  [[services.tcp_checks]]
+    grace_period = "10s"
+    interval = "15s"
+    timeout = "5s"
+
+  [[services.http_checks]]
+    grace_period = "10s"
+    interval = "30s"
+    timeout = "5s"
+    path = "/health"
+    protocol = "http"
+    tls_skip_verify = false
+
+[[vm]]
+  memory = "512mb"
+  cpus = 1
+  cpu_kind = "shared"
+
+[checks]
+  [checks.alive]
+    type = "http"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/health"
+
+[[metrics]]
+  port = 9090
+  handlers = ["http"]
+  path = "/metrics"

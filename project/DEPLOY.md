@@ -6,8 +6,9 @@
 - Git installed
 - GitHub account
 - Supabase account (supabase.com)
-- Railway account (railway.app)
+- Fly.io account (fly.io)
 - Vercel account (vercel.com)
+- Flyctl CLI installed locally (see STEP 4)
 
 ---
 
@@ -81,29 +82,75 @@ git push -u origin master
 
 ---
 
-## STEP 4 — Deploy API to Railway
+## STEP 4 — Deploy API to Fly.io
 
-1. Go to https://railway.app → New Project → Deploy from GitHub
-2. Select your atom-os repo
-3. Railway will detect it automatically
+### 4a. Install Flyctl CLI
 
-4. Set Environment Variables (Railway dashboard → Variables):
-   ```
-   NODE_ENV=production
-   PORT=4000
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_ANON_KEY=eyJ...
-   SUPABASE_SERVICE_ROLE_KEY=eyJ...
-   ANTHROPIC_API_KEY=sk-ant-...     (optional: for AI Coach feature)
-   FRONTEND_URL=https://your-app.vercel.app  (set after Vercel deploy)
-   ```
+```bash
+# macOS
+brew install flyctl
 
-5. Settings → Deploy:
-   - Build Command: cd apps/api && npm run build
-   - Start Command: node apps/api/dist/index.js
-   - Health Check: /health
+# Linux / WSL
+curl -L https://fly.io/install.sh | sh
 
-6. Note your Railway domain: https://atom-os-api-xxxx.railway.app
+# Windows (PowerShell as Admin)
+iwr https://fly.io/install.ps1 -useb | iex
+```
+
+Verify: `flyctl version`
+
+### 4b. Authenticate & Create App
+
+```bash
+flyctl auth login
+# Opens browser → sign in / sign up at fly.io
+
+cd atom-os
+
+# Create Fly.io app (region: sin = Singapore, closest to India)
+flyctl launch --name atom-os-api --region sin --no-deploy
+# This creates/updates fly.toml
+
+# If prompted about database: choose "Do not set up Postgres" (use Supabase instead)
+```
+
+### 4c. Set Environment Variables
+
+```bash
+flyctl secrets set \
+  NODE_ENV=production \
+  SUPABASE_URL=https://your-project.supabase.co \
+  SUPABASE_ANON_KEY=eyJ... \
+  SUPABASE_SERVICE_ROLE_KEY=eyJ... \
+  ANTHROPIC_API_KEY=sk-ant-... \
+  FRONTEND_URL=https://your-app.vercel.app
+
+# Verify secrets were set:
+flyctl secrets list
+```
+
+### 4d. Deploy
+
+```bash
+# Deploy app
+flyctl deploy
+
+# Watch deployment
+flyctl status
+flyctl logs
+
+# Get your public URL (e.g., https://atom-os-api.fly.dev)
+flyctl info
+```
+
+### 4e. Verify Health Check
+
+```bash
+curl https://atom-os-api.fly.dev/health
+# Should return: { "status": "ok" }
+```
+
+Note your Fly.io domain: `https://atom-os-api.fly.dev` (or your custom domain)
 
 ---
 
@@ -116,15 +163,18 @@ git push -u origin master
 
 5. Set Environment Variables:
    ```
-   VITE_API_URL=https://atom-os-api-xxxx.railway.app
+   VITE_API_URL=https://atom-os-api.fly.dev
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...
    ```
 
 6. Deploy → note your Vercel domain
 
-7. Go back to Railway → add to Variables:
-   FRONTEND_URL=https://your-app.vercel.app
+7. Go back to Fly.io → update FRONTEND_URL variable:
+   ```bash
+   flyctl secrets set FRONTEND_URL=https://your-app.vercel.app
+   flyctl deploy --skip-health-checks  # Quick re-deploy with new URL
+   ```
 
 ---
 
@@ -158,8 +208,8 @@ git push -u origin master
 - [ ] Supabase RLS enabled (verify in Table Editor → RLS tab)
 - [ ] Service role key NOT in frontend env vars
 - [ ] CORS locked to Vercel domain only
-- [ ] Rate limiting active (check Railway logs)
-- [ ] Health check passing: https://your-api.railway.app/health
+- [ ] Rate limiting active (check Fly.io logs: `flyctl logs`)
+- [ ] Health check passing: `curl https://atom-os-api.fly.dev/health`
 - [ ] Test full flow: signup → join → approve → QR scan → checkin ✓
 
 ---
@@ -167,17 +217,95 @@ git push -u origin master
 ## TROUBLESHOOTING
 
 **Login fails after deploy:**
-→ Check VITE_API_URL is correct Railway domain
-→ Check FRONTEND_URL in Railway matches Vercel domain exactly
+```bash
+# Check if API is running
+flyctl status
+# Check VITE_API_URL matches Fly.io domain
+flyctl info
+# Check FRONTEND_URL on Fly.io
+flyctl secrets list | grep FRONTEND_URL
+```
 
 **QR tokens not generating:**
-→ Verify SUPABASE_SERVICE_ROLE_KEY is set in Railway
+→ Verify SUPABASE_SERVICE_ROLE_KEY is set on Fly.io
+```bash
+flyctl secrets list | grep SUPABASE_SERVICE_ROLE_KEY
+```
 → Service role bypasses RLS — required for qr_tokens writes
 
 **Members can't check in:**
 → Confirm gym status is 'active' (super admin panel)
 → Confirm membership status is 'approved'
 → Check token not expired (default 180s)
+→ Check Fly.io logs for errors:
+```bash
+flyctl logs
+```
 
 **CORS errors:**
-→ FRONTEND_URL in Railway must match Vercel URL exactly (no trailing slash)
+→ FRONTEND_URL on Fly.io must match Vercel URL exactly (no trailing slash)
+```bash
+flyctl secrets set FRONTEND_URL=https://your-app.vercel.app
+flyctl deploy --skip-health-checks
+```
+
+**Deployment stuck or slow:**
+```bash
+# Check current deployment status
+flyctl status
+# View recent deployments
+flyctl history
+# Roll back to previous version
+flyctl certs show
+```
+
+---
+
+## FLY.IO MANAGEMENT
+
+### Monitor Logs
+```bash
+# Real-time logs
+flyctl logs
+
+# Last 100 lines
+flyctl logs --lines 100
+
+# Watch for errors
+flyctl logs --follow
+```
+
+### Scale Up (if needed)
+```bash
+# Increase VM size (default: shared-cpu-2x 512MB)
+flyctl scale vm shared-cpu-4x  # or performance-1x for higher load
+
+# Increase region replicas
+flyctl scale count 2  # Run 2 instances
+```
+
+### Update Secrets
+```bash
+# Change an environment variable
+flyctl secrets set ANTHROPIC_API_KEY=sk-ant-new-key
+
+# List all secrets
+flyctl secrets list
+
+# Remove a secret
+flyctl secrets unset SOME_VAR
+```
+
+### Redeploy Current Code
+```bash
+# After git push
+flyctl deploy
+```
+
+### SSH into Running App (debugging)
+```bash
+flyctl ssh console
+# Then inside the container:
+ls /app
+node -e "console.log(process.env.NODE_ENV)"
+```
