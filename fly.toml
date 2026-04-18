@@ -2,7 +2,7 @@
 # See https://fly.io/docs/reference/configuration/
 
 app = "atom-os-api"
-primary_region = "sin"  # Singapore (closest to India)
+primary_region = "bom"  # Bombay, India
 
 [build]
 builder = "docker"
@@ -44,9 +44,11 @@ dockerfile = "./Dockerfile"
     tls_skip_verify = false
 
 [[vm]]
-  memory = "512mb"
+  memory = "256mb"
   cpus = 1
   cpu_kind = "shared"
+
+# Free tier: 3 shared instances included
 
 [checks]
   [checks.alive]
@@ -57,7 +59,4 @@ dockerfile = "./Dockerfile"
     method = "GET"
     path = "/health"
 
-[[metrics]]
-  port = 9090
-  handlers = ["http"]
-  path = "/metrics"
+# Metrics disabled for free tier to avoid additional costs
