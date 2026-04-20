@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { authApi, setToken, setRefreshToken, clearToken } from '@/lib/api';
+import { ApiError, authApi, setToken, setRefreshToken, clearToken } from '@/lib/api';
 
 function normalizeRole(role: string | undefined): 'super_admin' | 'gym_admin' | 'member' {
   const value = String(role ?? '')
@@ -88,27 +88,23 @@ const useAuthStore = create<AuthState>((set) => ({
   },
 
   fetchMe: async () => {
-    set({ loading: true });
+    set({ loading: true, isLoading: true });
     try {
-      const token = localStorage.getItem('atom_token');
-      if (!token) {
-        set({ user: null, isAuthenticated: false, loading: false, isInitialized: true });
+      const accessToken = localStorage.getItem('atom_token');
+      const refreshToken = localStorage.getItem('atom_refresh');
+
+      if (!accessToken && !refreshToken) {
+        set({ user: null, isAuthenticated: false, loading: false, isLoading: false, isInitialized: true });
         return;
       }
 
-      const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:4000';
-      const response = await fetch(`${API_BASE}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        clearToken();
-        set({ user: null, isAuthenticated: false, loading: false, isInitialized: true });
-        return;
+      if (!accessToken && refreshToken) {
+        const refreshed = await authApi.refresh({ refresh_token: refreshToken });
+        if (refreshed?.access_token) setToken(refreshed.access_token);
+        if (refreshed?.refresh_token) setRefreshToken(refreshed.refresh_token);
       }
 
-      const json = await response.json();
-      const data = json.data;
+      const data = await authApi.me();
 
       if (data) {
         set({
@@ -121,15 +117,19 @@ const useAuthStore = create<AuthState>((set) => ({
           },
           isAuthenticated: true,
           loading: false,
+          isLoading: false,
           isInitialized: true,
         });
       } else {
         clearToken();
-        set({ user: null, isAuthenticated: false, loading: false, isInitialized: true });
+        set({ user: null, isAuthenticated: false, loading: false, isLoading: false, isInitialized: true });
       }
-    } catch {
-      clearToken();
-      set({ user: null, isAuthenticated: false, loading: false, isInitialized: true });
+    } catch (err) {
+      // Only clear credentials on explicit auth failures.
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        clearToken();
+      }
+      set({ user: null, isAuthenticated: false, loading: false, isLoading: false, isInitialized: true });
     }
   },
 }));

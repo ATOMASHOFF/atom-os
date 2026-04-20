@@ -123,6 +123,8 @@ export const authApi = {
     api.post<any>('/api/auth/signup', body),
   login: (body: { identifier: string; password: string }) =>
     api.post<any>('/api/auth/login', body),
+  refresh: (body: { refresh_token: string }) =>
+    api.post<any>('/api/auth/refresh', body),
   me: () => api.get<any>('/api/auth/me'),
   updateProfile: (body: any) => api.patch<any>('/api/auth/me', body),
   logout: () => api.post('/api/auth/logout'),

@@ -32,14 +32,35 @@ import subscriptionsRouter from './routes/subscriptions';
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '4000', 10);
 
+function getAllowedOrigins(): string[] {
+  const fromList = (process.env.CORS_ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  const defaults = [
+    process.env.FRONTEND_URL ?? 'http://localhost:5173',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ];
+
+  return Array.from(new Set([...fromList, ...defaults]));
+}
+
+function validateCriticalEnv(): string[] {
+  const required = [
+    'SUPABASE_URL',
+    'SUPABASE_ANON_KEY',
+    'SUPABASE_SERVICE_ROLE_KEY',
+  ];
+
+  return required.filter((key) => !process.env[key]);
+}
+
 // ─── HEALTH CHECK ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
   console.log(`[HEALTH] Check received from ${req.ip}`);
-  const missingVars = [
-    !process.env.SUPABASE_URL && 'SUPABASE_URL',
-    !process.env.SUPABASE_ANON_KEY && 'SUPABASE_ANON_KEY',
-    !process.env.SUPABASE_SERVICE_ROLE_KEY && 'SUPABASE_SERVICE_ROLE_KEY',
-  ].filter(Boolean);
+  const missingVars = validateCriticalEnv();
 
   res.status(200).json({
     status: missingVars.length === 0 ? 'ok' : 'degraded',
@@ -51,18 +72,25 @@ app.get('/health', (req, res) => {
 });
 
 // ─── SECURITY MIDDLEWARE ──────────────────────────────────────────────────────
+const missingCriticalEnv = validateCriticalEnv();
+if (missingCriticalEnv.length > 0) {
+  console.error(`[STARTUP] Missing critical env vars: ${missingCriticalEnv.join(', ')}`);
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
+}
+
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
+
 app.use(helmet({ crossOriginEmbedderPolicy: false }));
 
+const allowedOrigins = getAllowedOrigins();
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow requests from non-browser clients (health checks, server-to-server).
     if (!origin) return callback(null, true);
-    const allowed = [
-      process.env.FRONTEND_URL ?? 'http://localhost:5173',
-      'http://localhost:5173',
-      'http://localhost:3000',
-    ];
-    const isVercel = /^https:\/\/.*\.vercel\.app$/.test(origin);
-    if (allowed.includes(origin) || isVercel) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.warn(`[CORS] Blocked origin: ${origin}`);
@@ -96,7 +124,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // ─── API ROUTES ───────────────────────────────────────────────────────────────
-app.use('/api/auth', authRouter);
+app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/gyms', gymsRouter);
 app.use('/api/membership', membershipRouter);
 app.use('/api/qr', qrRouter);
