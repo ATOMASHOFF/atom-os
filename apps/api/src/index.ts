@@ -32,14 +32,18 @@ import subscriptionsRouter from './routes/subscriptions';
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '4000', 10);
 
+function normalizeOrigin(value: string): string {
+  return value.trim().replace(/\/+$/, '');
+}
+
 function getAllowedOrigins(): string[] {
   const fromList = (process.env.CORS_ALLOWED_ORIGINS ?? '')
     .split(',')
-    .map((value) => value.trim())
+    .map(normalizeOrigin)
     .filter(Boolean);
 
   const defaults = [
-    process.env.FRONTEND_URL ?? 'http://localhost:5173',
+    normalizeOrigin(process.env.FRONTEND_URL ?? 'http://localhost:5173'),
     'http://localhost:5173',
     'http://localhost:3000',
   ];
@@ -90,7 +94,7 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests from non-browser clients (health checks, server-to-server).
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(normalizeOrigin(origin))) {
       callback(null, true);
     } else {
       console.warn(`[CORS] Blocked origin: ${origin}`);
