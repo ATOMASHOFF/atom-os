@@ -10,10 +10,33 @@ export default function AdminDashboard() {
   const user     = useUser();
   const navigate = useNavigate();
 
-  const { data: statsData } = useQuery({ queryKey: ['membership-stats'], queryFn: membershipApi.stats, refetchInterval: 60_000 });
-  const { data: todayData  } = useQuery({ queryKey: ['checkins-today'],   queryFn: checkinApi.today,   refetchInterval: 30_000 });
-  const { data: reqData    } = useQuery({ queryKey: ['admin-join-requests'], queryFn: membershipApi.requests });
-  const { data: gymData    } = useQuery({ queryKey: ['my-gym'], queryFn: gymApi.my, enabled: !!user?.gym_id });
+  const { data: statsData } = useQuery({
+    queryKey: ['membership-stats'],
+    queryFn: membershipApi.stats,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+  const { data: todayData  } = useQuery({
+    queryKey: ['checkins-today'],
+    queryFn: checkinApi.today,
+    refetchInterval: 30_000,
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
+  });
+  const { data: reqData    } = useQuery({
+    queryKey: ['admin-join-requests'],
+    queryFn: membershipApi.requests,
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
+  });
+  const { data: gymData    } = useQuery({
+    queryKey: ['my-gym'],
+    queryFn: gymApi.my,
+    enabled: !!user?.gym_id,
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+  });
 
   const stats    = statsData ?? {} as any;
   const today    = todayData ?? {} as any;

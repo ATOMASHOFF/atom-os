@@ -107,8 +107,8 @@ flyctl auth login
 
 cd atom-os
 
-# Create Fly.io app (region: sin = Singapore, closest to India)
-flyctl launch --name atom-os-api --region sin --no-deploy
+# Create Fly.io app (region: bom = Bombay, India)
+flyctl launch --name atom-os-api --region bom --no-deploy
 # This creates/updates fly.toml
 
 # If prompted about database: choose "Do not set up Postgres" (use Supabase instead)

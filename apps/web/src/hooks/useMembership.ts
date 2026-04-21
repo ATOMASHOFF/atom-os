@@ -7,6 +7,8 @@ export function useMyMemberships() {
   return useQuery({
     queryKey: ['my-memberships'],
     queryFn: membershipApi.myStatus,
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
     select: (d: any) => d.memberships ?? [],
   });
 }
@@ -33,6 +35,7 @@ export function useGymStats() {
     queryKey: ['membership-stats'],
     queryFn: membershipApi.stats,
     refetchInterval: 60_000,
+    staleTime: 30_000,
   });
 }
 
@@ -42,6 +45,7 @@ export function useJoinRequests() {
     queryFn: membershipApi.requests,
     select: (d: any) => d.requests ?? [],
     refetchInterval: 30_000,
+    staleTime: 15_000,
   });
 }
 

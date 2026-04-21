@@ -1,37 +1,40 @@
 // apps/web/src/pages/member/MemberDashboard.tsx
 import { useQuery } from '@tanstack/react-query';
-import { membershipApi, checkinApi, workoutApi } from '@/lib/api';
+import { checkinApi, workoutApi } from '@/lib/api';
 import { ScanLine, Dumbbell, Calendar, CheckCircle2, Clock, Lock } from 'lucide-react';
 import { useUser } from '@/store/auth';
 import { Link } from 'react-router-dom';
 import { format, formatDistanceToNow } from 'date-fns';
 import { SubscriptionBanner } from '@/components/member/SubscriptionBanner';
 import { NewMemberWelcome } from '@/components/member/NewMemberWelcome';
+import { useMyMemberships } from '@/hooks/useMembership';
 
 export default function MemberDashboard() {
   const user = useUser();
 
-  const { data: membershipData } = useQuery({
-    queryKey: ['my-memberships'],
-    queryFn: membershipApi.myStatus,
-  });
+  const { data: memberships = [] } = useMyMemberships();
 
   const { data: checkinsData } = useQuery({
     queryKey: ['my-checkins'],
     queryFn: () => checkinApi.my(1),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: workoutStats } = useQuery({
     queryKey: ['workout-stats'],
     queryFn: workoutApi.stats,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: recentWorkouts } = useQuery({
     queryKey: ['workouts'],
     queryFn: () => workoutApi.list({ limit: 3 }),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
-  const memberships   = membershipData?.memberships ?? [];
   const approvedGyms  = memberships.filter((m: any) => m.status === 'approved');
   const pendingGyms   = memberships.filter((m: any) => m.status === 'pending');
   const recentCheckins = checkinsData?.checkins ?? [];

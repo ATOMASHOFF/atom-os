@@ -20,6 +20,8 @@ export default function SuperGyms() {
   const { data, isLoading } = useQuery({
     queryKey: ['super-gyms'],
     queryFn: adminApi.gyms,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
   const gyms = data?.gyms ?? [];
 
@@ -28,6 +30,8 @@ export default function SuperGyms() {
     queryKey: ['admin-users-all', adminSearch],
     queryFn: () => adminApi.users({ search: adminSearch || undefined, limit: 30 } as any),
     enabled: !!assignGym,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
   const eligibleUsers = (usersData?.users ?? []).filter(
     (u: any) => u.role !== 'super_admin'

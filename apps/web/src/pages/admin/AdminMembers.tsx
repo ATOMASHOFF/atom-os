@@ -21,10 +21,6 @@ export default function AdminMembers() {
   const [approveModal, setApproveModal] = useState<any>(null);
   const [subMember, setSubMember]       = useState<any>(null);
   const [addModal, setAddModal]         = useState(false);
-  const [approveForm, setApproveForm]   = useState({
-    plan: 'monthly', notes: '', amount_paid: '',
-    subscription_start: new Date().toISOString().split('T')[0],
-  });
   const [addForm, setAddForm] = useState({
     full_name: '', email: '', phone: '',
     subscription_plan:  'monthly',
@@ -313,42 +309,19 @@ export default function AdminMembers() {
               <p className="text-atom-muted text-sm mt-1">{approveModal.user?.full_name}</p>
             </div>
             <div className="p-6 flex flex-col gap-4">
-              <div>
-                <label className="label">Subscription Plan</label>
-                <select className="input" value={approveForm.plan} onChange={e => setApproveForm(f => ({ ...f, plan: e.target.value }))}>
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                  <option value="annual">Annual</option>
-                  <option value="pay_as_you_go">Pay As You Go</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="label">Start Date</label>
-                  <input type="date" className="input" value={approveForm.subscription_start}
-                    onChange={e => setApproveForm(f => ({ ...f, subscription_start: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="label">Amount Paid (₹)</label>
-                  <input type="number" className="input" placeholder="0"
-                    value={approveForm.amount_paid} onChange={e => setApproveForm(f => ({ ...f, amount_paid: e.target.value }))} />
-                </div>
-              </div>
-              <div>
-                <label className="label">Notes</label>
-                <textarea className="input h-20 resize-none" value={approveForm.notes}
-                  onChange={e => setApproveForm(f => ({ ...f, notes: e.target.value }))} />
-              </div>
+              <p className="text-atom-text text-sm leading-relaxed">
+                This will approve <span className="font-600">{approveModal.user?.full_name}</span> and move them to active members.
+              </p>
+              <p className="text-atom-muted text-xs">
+                You can assign or change their membership plan from the <span className="font-600">Assign Membership</span> action after approval.
+              </p>
             </div>
             <div className="p-6 border-t border-atom-border flex gap-3 justify-end">
               <button className="btn-ghost" onClick={() => setApproveModal(null)}>Cancel</button>
               <button className="btn-primary" disabled={approveMut.isPending}
                 onClick={() => approveMut.mutate({
                   id: approveModal.id,
-                  body: { status: 'approved', subscription_plan: approveForm.plan,
-                          subscription_start: approveForm.subscription_start,
-                          amount_paid: Number(approveForm.amount_paid) || 0,
-                          notes: approveForm.notes || undefined },
+                  body: { status: 'approved' },
                 })}>
                 {approveMut.isPending ? 'Approving...' : '✓ Approve'}
               </button>

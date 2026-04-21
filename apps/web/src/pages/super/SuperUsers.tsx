@@ -16,6 +16,8 @@ export default function SuperUsers() {
     queryKey: ['admin-users', search, roleFilter],
     queryFn: () => adminApi.users({ search: search || undefined, role: roleFilter || undefined }),
     placeholderData: prev => prev,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
 
   const roleMut = useMutation({

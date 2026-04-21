@@ -5,9 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { plansApi, subscriptionsApi } from '@/lib/api';
 import { Modal } from '@/components/ui/Modal';
-import { Calendar, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { addDays, format } from 'date-fns';
 
 interface Props {
   member: any;
@@ -19,10 +18,7 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
   const qc = useQueryClient();
   const targetMemberId = member?.user_id ?? member?.user?.id;
 
-  const today = format(new Date(), 'yyyy-MM-dd');
   const [planId, setPlanId] = useState<string>('');
-  const [startDate, setStartDate] = useState(today);
-  const [paymentStatus, setPaymentStatus] = useState<'paid' | 'pending' | 'failed'>('paid');
 
   const { data: plansData, isLoading: plansLoading } = useQuery<any>({
     queryKey: ['admin-membership-plans'],
@@ -46,10 +42,8 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
       }
 
       return subscriptionsApi.assign({
-      member_id: targetMemberId,
-      plan_id: planId,
-      start_date: startDate,
-      payment_status: paymentStatus,
+        member_id: targetMemberId,
+        plan_id: planId,
       });
     },
     onSuccess: () => {
@@ -65,9 +59,6 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
   });
 
   const selectedPlan = activePlans.find((p: any) => p.id === planId);
-  const endDate = selectedPlan
-    ? format(addDays(new Date(startDate), Math.max(0, selectedPlan.duration_days - 1)), 'yyyy-MM-dd')
-    : '';
 
   return (
     <Modal
@@ -121,42 +112,8 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
           </select>
         </div>
 
-        {/* Dates */}
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="label">Start Date</label>
-            <div className="relative">
-              <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-atom-muted" />
-              <input
-                type="date" className="input pl-9 text-sm"
-                value={startDate}
-                onChange={e => setStartDate(e.target.value)}
-              />
-            </div>
-          </div>
-          <div>
-            <label className="label">End Date</label>
-            <div className="relative">
-              <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-atom-muted" />
-              <input
-                type="date" className="input pl-9 text-sm"
-                value={endDate}
-                readOnly
-              />
-            </div>
-          </div>
-          <div>
-            <label className="label">Payment</label>
-            <select className="input" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value as any)}>
-              <option value="paid">Paid</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-            </select>
-          </div>
-        </div>
-
         {/* Summary */}
-        {selectedPlan && startDate && endDate && (
+        {selectedPlan && (
           <div className="p-3 rounded-xl bg-atom-accent/5 border border-atom-accent/20 text-sm">
             <div className="flex justify-between text-atom-muted mb-1">
               <span>Plan</span>
@@ -164,9 +121,7 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
             </div>
             <div className="flex justify-between text-atom-muted mb-1">
               <span>Duration</span>
-              <span className="text-atom-text font-mono text-xs">
-                {startDate} → {endDate}
-              </span>
+              <span className="text-atom-text font-mono text-xs">{selectedPlan.duration_days} days</span>
             </div>
             <div className="flex justify-between text-atom-muted">
               <span>Price</span>

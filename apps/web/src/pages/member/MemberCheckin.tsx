@@ -4,12 +4,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { checkinApi, membershipApi } from '@/lib/api';
+import { checkinApi } from '@/lib/api';
 import { ScanLine, CheckCircle2, XCircle, Camera, Lock, ArrowRight, Clock } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode';
+import type { Html5QrcodeScanner } from 'html5-qrcode';
 import { Link } from 'react-router-dom';
+import { useMyMemberships } from '@/hooks/useMembership';
 
 type ScanState = 'idle' | 'scanning' | 'success' | 'error';
 
@@ -18,6 +18,7 @@ export default function MemberCheckin() {
   const [scanResult, setScanResult] = useState<{ message: string; gym?: string } | null>(null);
   const [scanError, setScanError]   = useState<string | null>(null);
   const [scanning,  setScanning]    = useState(false);
+  const [scannerLoading, setScannerLoading] = useState(false);
   const scannerRef  = useRef<Html5QrcodeScanner | null>(null);
 
   const cleanupScanner = () => {
@@ -27,17 +28,16 @@ export default function MemberCheckin() {
     }
   };
 
-  const { data: membershipData } = useQuery({
-    queryKey: ['my-memberships'],
-    queryFn: membershipApi.myStatus,
-  });
+  const { data: memberships = [] } = useMyMemberships();
+  const approvedGyms = (memberships as any[]).filter((m: any) => m.status === 'approved');
 
   const { data: checkinsData, refetch: refetchCheckins } = useQuery({
     queryKey: ['my-checkins'],
     queryFn: () => checkinApi.my(1),
+    enabled: approvedGyms.length > 0 && scanState !== 'idle',
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
-
-  const approvedGyms = (membershipData?.memberships ?? []).filter((m: any) => m.status === 'approved');
   const checkins     = checkinsData?.checkins ?? [];
 
   function startScanner() {
@@ -45,64 +45,85 @@ export default function MemberCheckin() {
     setScanState('scanning');
     setScanResult(null);
     setScanError(null);
+    setScannerLoading(true);
   }
 
   useEffect(() => {
     if (!scanning) return;
 
-    // Small delay to ensure DOM is ready
-    const timeout = setTimeout(() => {
-      if (!document.getElementById('qr-reader')) return;
+    let isActive = true;
+    const timeout = setTimeout(async () => {
+      try {
+        const { Html5QrcodeScanner, Html5QrcodeScanType } = await import('html5-qrcode');
+        if (!isActive) return;
 
-      const scanner = new Html5QrcodeScanner(
-        'qr-reader',
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-          rememberLastUsedCamera: true,
-        },
-        false
-      );
-
-      scanner.render(
-        async (decodedText) => {
-          // Pause scanner
-          scanner.pause(true);
-
-          // Validate UUID format
-          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-          if (!uuidRegex.test(decodedText)) {
-            setScanState('error');
-            setScanError('Invalid QR code. Please scan your gym\'s Atom OS check-in code.');
-            setScanning(false);
-            return;
-          }
-
-          try {
-            setScanState('scanning'); // Keep scanning UI while validating
-            const result = await checkinApi.scan(decodedText);
-            setScanResult({ message: result.message, gym: result.checkin?.gym?.name });
-            setScanState('success');
-            refetchCheckins();
-          } catch (err: any) {
-            setScanState('error');
-            setScanError(err.message || 'Check-in failed');
-          } finally {
-            setScanning(false);
-          }
-        },
-        (error) => {
-          // Ignore scan errors (camera noise) — only log real failures
+        if (!document.getElementById('qr-reader')) {
+          throw new Error('Scanner container missing');
         }
-      );
 
-      scannerRef.current = scanner;
-    }, 300);
+        const scanner = new Html5QrcodeScanner(
+          'qr-reader',
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+            rememberLastUsedCamera: true,
+          },
+          false
+        );
+
+        scannerRef.current = scanner;
+
+        scanner.render(
+          async (decodedText) => {
+            scanner.pause(true);
+
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!uuidRegex.test(decodedText)) {
+              setScanState('error');
+              setScanError('That QR code is not a valid Atom OS check-in code. Try the gym screen again.');
+              setScannerLoading(false);
+              cleanupScanner();
+              setScanning(false);
+              return;
+            }
+
+            try {
+              const result = await checkinApi.scan(decodedText);
+              setScanResult({ message: result.message, gym: result.checkin?.gym?.name });
+              setScanState('success');
+              refetchCheckins();
+            } catch (err: any) {
+              setScanState('error');
+              setScanError(err.message || 'Check-in failed');
+            } finally {
+              setScannerLoading(false);
+              cleanupScanner();
+              setScanning(false);
+            }
+          },
+          () => {
+            // Ignore transient camera noise and decode failures.
+          }
+        );
+
+        if (isActive) {
+          setScannerLoading(false);
+        }
+      } catch {
+        if (!isActive) return;
+        setScannerLoading(false);
+        setScanning(false);
+        setScanState('error');
+        setScanError('Could not open the camera. Check browser permissions and try again.');
+      }
+    }, 0);
 
     return () => {
+      isActive = false;
       clearTimeout(timeout);
       cleanupScanner();
+      setScannerLoading(false);
     };
   }, [scanning]);
 
@@ -113,7 +134,7 @@ export default function MemberCheckin() {
   }, []);
 
   if (approvedGyms.length === 0) {
-    const pendingGyms = (membershipData?.memberships ?? []).filter((m: any) => m.status === 'pending');
+    const pendingGyms = (memberships as any[]).filter((m: any) => m.status === 'pending');
     const hasPending  = pendingGyms.length > 0;
 
     return (
@@ -248,20 +269,46 @@ export default function MemberCheckin() {
             </div>
             <div className="text-center">
               <p className="font-display font-700 text-atom-text uppercase tracking-wide mb-1">
-                Ready to Check In
+                Ready to scan
               </p>
               <p className="text-atom-muted text-sm">
-                Tap the button below to open your camera and scan the gym's QR code.
+                Open the camera, center the QR code, and keep it steady in good light.
               </p>
+            </div>
+            <div className="w-full rounded-xl border border-atom-border/70 bg-atom-bg/50 p-3 text-left text-xs text-atom-muted space-y-1">
+              <p>1. Allow camera access when prompted</p>
+              <p>2. Hold the QR inside the frame</p>
+              <p>3. Use the gym's live screen, not a photo of a photo</p>
             </div>
             <button onClick={startScanner} className="btn-primary flex items-center gap-2 w-full justify-center">
               <ScanLine size={18} />
-              Open Scanner
+              Open Camera
             </button>
           </div>
         )}
 
-        {scanning && (
+        {scanning && scannerLoading && (
+          <div className="p-6 flex flex-col items-center gap-4 text-center">
+            <div className="w-10 h-10 border-2 border-atom-accent border-t-transparent rounded-full animate-spin" />
+            <div>
+              <p className="font-display font-700 uppercase tracking-wide text-atom-text">Opening camera</p>
+              <p className="text-atom-muted text-sm mt-1">Allow camera access if prompted. This only loads when you tap Open Camera.</p>
+            </div>
+            <button
+              onClick={() => {
+                cleanupScanner();
+                setScannerLoading(false);
+                setScanning(false);
+                setScanState('idle');
+              }}
+              className="btn-ghost w-full text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {scanning && !scannerLoading && (
           <div className="p-4">
             <p className="text-center text-atom-muted text-sm mb-3 font-display uppercase tracking-wide">
               Point camera at gym QR code
@@ -271,6 +318,7 @@ export default function MemberCheckin() {
               onClick={() => {
                 cleanupScanner();
                 setScanning(false);
+                setScannerLoading(false);
                 setScanState('idle');
               }}
               className="btn-ghost w-full mt-3 text-sm"
@@ -295,6 +343,9 @@ export default function MemberCheckin() {
                 <p className="font-500 text-atom-text text-sm mt-1">{scanResult.gym}</p>
               )}
             </div>
+            <button onClick={startScanner} className="btn-ghost text-sm w-full">
+              Scan Another
+            </button>
             <button onClick={() => setScanState('idle')} className="btn-ghost text-sm w-full">
               Done
             </button>
@@ -312,6 +363,7 @@ export default function MemberCheckin() {
                 Check-in Failed
               </p>
               <p className="text-atom-muted text-sm mt-1">{scanError}</p>
+              <p className="text-atom-muted text-xs mt-2">If the code is blurry, move closer or improve the lighting.</p>
             </div>
             <button onClick={startScanner} className="btn-primary text-sm w-full">
               Try Again
@@ -342,7 +394,11 @@ export default function MemberCheckin() {
         <h3 className="font-display text-sm font-700 uppercase tracking-widest text-atom-muted mb-3">
           Recent Check-ins
         </h3>
-        {checkins.length === 0 ? (
+        {scanState === 'idle' && !checkinsData ? (
+          <p className="text-atom-muted text-sm text-center py-6">
+            Open the camera to load your recent check-ins.
+          </p>
+        ) : checkins.length === 0 ? (
           <p className="text-atom-muted text-sm text-center py-6">No check-ins yet</p>
         ) : checkins.map((c: any) => (
           <div key={c.id} className="flex items-center gap-3 py-2.5 border-b border-atom-border/40 last:border-0">

@@ -11,9 +11,8 @@ import {
   Menu, X, TrendingUp, Lock, Sparkles, Megaphone, UsersRound, CreditCard,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { useQuery } from '@tanstack/react-query';
-import { membershipApi } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { useMyMemberships } from '@/hooks/useMembership';
 
 type Role = 'super_admin' | 'gym_admin' | 'member';
 
@@ -67,14 +66,9 @@ export default function AppLayout({ role }: { role: Role }) {
   const items      = NAV[role];
   const [drawer, setDrawer] = useState(false);
 
-  const { data: membershipData } = useQuery({
-    queryKey: ['my-memberships'],
-    queryFn:  membershipApi.myStatus,
-    enabled:  role === 'member',
-    staleTime: 30_000,
-  });
+  const { data: memberships = [] } = useMyMemberships();
   const hasApprovedGym = role === 'member'
-    ? (membershipData?.memberships ?? []).some((m: any) => m.status === 'approved')
+    ? (memberships as any[]).some((m: any) => m.status === 'approved')
     : true;
 
   const visibleItems = role === 'member'

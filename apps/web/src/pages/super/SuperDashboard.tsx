@@ -13,10 +13,14 @@ export default function SuperDashboard() {
     queryKey: ['admin-stats'],
     queryFn:  adminApi.stats,
     refetchInterval: 30_000,
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
   });
   const { data: gymsData, isLoading: gymsLoading } = useQuery({
     queryKey: ['admin-gyms'],
     queryFn:  adminApi.gyms,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const gyms = gymsData?.gyms ?? [];
