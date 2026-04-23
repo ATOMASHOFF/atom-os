@@ -89,6 +89,7 @@ export function SubscriptionModal({ member, open, onClose }: Props) {
         <div className="min-w-0">
           <p className="font-500 text-atom-text text-sm truncate">{member?.user?.full_name}</p>
           <p className="text-atom-muted text-xs truncate">{member?.user?.email}</p>
+          <p className="text-atom-muted text-[11px] font-mono mt-0.5">UID #{member?.member_uid ?? '—'}</p>
         </div>
         <span className="badge-blue capitalize flex-shrink-0 text-xs">{member?.status}</span>
       </div>

@@ -78,6 +78,7 @@ export default function AdminMembers() {
     ? currentList.filter((m: any) => {
         const q = search.toLowerCase();
         return (
+          String(m.member_uid ?? '').includes(q) ||
           m.user?.full_name?.toLowerCase().includes(q) ||
           m.user?.email?.toLowerCase().includes(q)     ||
           m.user?.phone?.toLowerCase().includes(q)
@@ -175,7 +176,7 @@ export default function AdminMembers() {
         </div>
         <div className="relative">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-atom-muted" />
-          <input className="input pl-9 w-64" placeholder="Search members..."
+          <input className="input pl-9 w-72" placeholder="Search members or UID..."
             value={search} onChange={e => setSearch(e.target.value)} />
         </div>
       </div>
@@ -245,6 +246,7 @@ export default function AdminMembers() {
                       <div>
                         <p className="font-500 text-atom-text">{m.user?.full_name ?? 'Unknown'}</p>
                         <p className="text-atom-muted text-xs">{m.user?.email ?? m.user?.phone ?? '—'}</p>
+                        <p className="text-atom-muted text-[11px] mt-0.5 font-mono">UID #{m.member_uid ?? '—'}</p>
                       </div>
                     </div>
                   </td>

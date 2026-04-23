@@ -50,6 +50,7 @@ export interface GymMember {
   id: string;
   gym_id: string;
   user_id: string;
+  member_uid: number;
   status: MembershipStatus;
   subscription_plan?: SubscriptionPlan;
   subscription_status?: SubscriptionStatus;

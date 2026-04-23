@@ -57,7 +57,7 @@ export default function SuperMembers() {
         {/* Search */}
         <div className="relative flex-1 min-w-48">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-atom-muted" />
-          <input className="input pl-9" placeholder="Search by name, email, phone..."
+          <input className="input pl-9" placeholder="Search by name, email, phone, UID..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }} />
         </div>
@@ -158,6 +158,7 @@ export default function SuperMembers() {
                         <div>
                           <p className="font-500 text-atom-text">{m.user?.full_name ?? 'Unknown'}</p>
                           <p className="text-atom-muted text-xs">{m.user?.email ?? m.user?.phone ?? '—'}</p>
+                          <p className="text-atom-muted text-[11px] mt-0.5 font-mono">UID #{m.member_uid ?? '—'}</p>
                         </div>
                       </div>
                     </td>
