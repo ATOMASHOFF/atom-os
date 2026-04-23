@@ -79,9 +79,7 @@ app.get('/health', (req, res) => {
 const missingCriticalEnv = validateCriticalEnv();
 if (missingCriticalEnv.length > 0) {
   console.error(`[STARTUP] Missing critical env vars: ${missingCriticalEnv.join(', ')}`);
-  if (process.env.NODE_ENV === 'production') {
-    process.exit(1);
-  }
+  console.error('[STARTUP] Continuing boot so /health can report degraded status for platform checks.');
 }
 
 app.disable('x-powered-by');
